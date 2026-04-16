@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SKT 고객여정 Manager</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css" rel="stylesheet">
+<style>
+:root{--bg:#F7F8FB;--card:#FFFFFF;--border:#E4E7ED;--text:#1A1D26;--text2:#5A5F6B;--text3:#9DA2AE;--pend-bg:#FFF9E6;--pend-bd:#F5C518;--pend-tx:#8B6914;--edit-dot:#F97316}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Pretendard','Apple SD Gothic Neo',-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+.header{background:linear-gradient(135deg,#0C111D 0%,#1C2333 50%,#0C111D 100%);padding:22px 28px 18px;color:#fff;position:sticky;top:0;z-index:100;border-bottom:1px solid #2a3040}
+.header-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.logo{width:34px;height:34px;border-radius:9px;background:#2E3B5E;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;line-height:1}
+.header-title{font-size:17px;font-weight:800;letter-spacing:-0.4px}
+.header-sub{font-size:10.5px;color:#7B8399;margin-top:1px}
+.header-right{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.stat-pills{display:flex;gap:6px}
+.stat-pill{padding:3px 10px;border-radius:7px;display:flex;align-items:center;gap:3px;font-size:10px}
+.stat-pill b{font-size:13px;color:#fff}
+.search-box input{width:200px;padding:7px 12px;border-radius:7px;border:1px solid #2E3650;background:#161C2E;color:#fff;font-size:12.5px;outline:none;font-family:inherit}
+.search-box input::placeholder{color:#5A6178}
+.search-box input:focus{border-color:#3B82F6}
+.btn{padding:6px 12px;border-radius:7px;border:1px solid #3A4260;background:transparent;color:#C8CDD9;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
+.btn:hover{background:#242D44;color:#fff}
+.btn.active{background:#3B82F6;border-color:#3B82F6;color:#fff}
+.btn-pend{background:#F59E0B22;border-color:#F59E0B55;color:#FCD34D}
+.btn-feedback{background:#6366F122;border-color:#6366F155;color:#A5B4FC;font-size:11px}
+.btn-feedback:hover{background:#6366F133;color:#C7D2FE}
+.expand-group{display:flex;border:1px solid #3A4260;border-radius:7px;overflow:hidden}
+.expand-group .ebtn{padding:6px 10px;border:none;border-right:1px solid #3A4260;background:transparent;color:#C8CDD9;font-size:10.5px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .12s;white-space:nowrap}
+.expand-group .ebtn:last-child{border-right:none}
+.expand-group .ebtn:hover{background:#242D44;color:#fff}
+.expand-group .ebtn.active{background:#3B82F6;color:#fff}
+
+.flow-bar{display:flex;align-items:center;gap:3px;padding:14px 28px 6px;overflow-x:auto}
+.flow-pill{padding:5px 13px;border-radius:18px;color:#fff;font-size:10.5px;font-weight:700;white-space:nowrap;cursor:pointer;transition:transform .12s,box-shadow .12s}
+.flow-pill:hover{transform:scale(1.06);box-shadow:0 2px 12px rgba(0,0,0,.15)}
+.flow-arrow{color:#C8CDD9;font-size:14px;flex-shrink:0;padding:0 1px}
+
+.journey-wrap{padding:10px 20px 30px;overflow-x:auto}
+.l1-grid{display:flex;gap:10px;align-items:flex-start}
+.l1-stage{min-width:300px;flex:1 1 300px;align-self:flex-start}
+
+.l1-card{border-radius:12px;padding:14px 16px;text-align:center;position:relative;cursor:pointer;transition:all .18s;border:2px solid}
+.l1-card:hover{transform:translateY(-2px)}
+.l1-icon{font-size:26px;margin-bottom:3px}
+.l1-name{font-size:14.5px;font-weight:800;letter-spacing:-0.4px}
+.l1-stats{display:flex;justify-content:center;gap:6px;margin-top:7px}
+.l1-stat{font-size:9.5px;padding:2px 7px;border-radius:9px;font-weight:600}
+.l1-toggle{position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;border:2px solid;transition:all .18s}
+
+.l2-wrap{margin-top:14px;padding-left:3px;animation:fadeSlide .2s ease}
+.l2-card{border:1px solid;border-radius:9px;overflow:hidden;margin-bottom:7px;background:var(--card);transition:box-shadow .18s}
+.l2-header{display:flex;align-items:center;gap:7px;padding:9px 12px;cursor:pointer;transition:all .12s}
+.l2-arrow{font-size:10px;transition:transform .15s;font-weight:700;flex-shrink:0}
+.l2-arrow.open{transform:rotate(90deg)}
+.l2-code{font-size:10px;font-family:'SF Mono','Courier New',monospace;padding:1px 5px;border-radius:4px;font-weight:600;flex-shrink:0}
+.l2-name{font-size:12.5px;font-weight:700;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.l2-counts{display:flex;gap:5px;flex-shrink:0}
+.l2-counts span{font-size:9.5px;color:var(--text3)}
+.l2-edit-btn{width:22px;height:22px;border-radius:4px;border:1px solid var(--border);background:var(--card);cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .12s;flex-shrink:0}
+.l2-header:hover .l2-edit-btn{opacity:1}
+.l2-body{padding:6px 9px;animation:fadeSlide .18s ease}
+
+.l3-block{margin-bottom:3px}
+.l3-header{display:flex;align-items:center;gap:5px;padding:5px 7px;border-radius:5px;cursor:pointer;transition:all .12s}
+.l3-header:hover{filter:brightness(.97)}
+.l3-arrow{font-size:9px;transition:transform .12s;flex-shrink:0}
+.l3-arrow.open{transform:rotate(90deg)}
+.l3-code{font-size:9.5px;font-family:'SF Mono','Courier New',monospace;opacity:.55;min-width:90px;flex-shrink:0}
+.l3-name{font-size:12px;font-weight:600;flex:1;min-width:0}
+.l3-count{font-size:9.5px;color:var(--text3);flex-shrink:0}
+.l3-edit-btn{width:20px;height:20px;border-radius:4px;border:1px solid var(--border);background:var(--card);cursor:pointer;font-size:9px;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .12s;flex-shrink:0}
+.l3-header:hover .l3-edit-btn{opacity:1}
+.l3-body{margin-left:16px;margin-top:1px;animation:fadeSlide .15s ease}
+
+.l4-row{display:flex;align-items:center;gap:6px;padding:3px 0 3px 10px;font-size:11.5px;color:var(--text2);border-left:2px solid;position:relative}
+.l4-code{font-size:9.5px;font-family:'SF Mono','Courier New',monospace;min-width:110px;opacity:.6;flex-shrink:0}
+.l4-name{flex:1;min-width:0}
+.src-tag{font-size:8.5px;padding:1px 5px;border-radius:3px;font-weight:500;white-space:nowrap;flex-shrink:0}
+.l4-edit-btn{width:20px;height:20px;border-radius:4px;border:1px solid var(--border);background:var(--card);cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .12s;flex-shrink:0}
+.l4-row:hover .l4-edit-btn{opacity:1}
+
+.l4-row.pending{background:var(--pend-bg);border-left-color:var(--pend-bd)!important;border-radius:4px;margin:2px 0}
+.l4-row.pending .l4-name{color:var(--pend-tx);font-weight:600}
+.pending-badge{font-size:8px;padding:1px 5px;border-radius:3px;background:#F5C518;color:#5C4813;font-weight:700;flex-shrink:0}
+.pend-card{border:1px dashed var(--pend-bd)!important;background:var(--pend-bg)!important;margin-bottom:7px;border-radius:9px;padding:10px 12px;display:flex;align-items:center;gap:8px;font-size:11.5px;flex-wrap:wrap}
+.pend-card .pend-label{font-weight:700;color:var(--pend-tx)}
+.pend-card .pend-content{flex:1;color:var(--pend-tx);min-width:0}
+
+.edit-dot{width:7px;height:7px;border-radius:50%;background:var(--edit-dot);flex-shrink:0;animation:pulse 1.8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+.add-btn{display:flex;align-items:center;gap:4px;padding:4px 10px;margin:4px 0 2px 0;border-radius:5px;border:1px dashed var(--border);background:transparent;color:var(--text3);font-size:10.5px;cursor:pointer;font-family:inherit;transition:all .12s}
+.add-btn:hover{border-color:#3B82F6;color:#3B82F6;background:#EFF6FF}
+.add-btn.l4-add{margin-left:10px}
+
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(12,17,29,.55);backdrop-filter:blur(3px);z-index:500;display:none;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--card);border-radius:14px;padding:24px;width:440px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:modalIn .2s ease}
+@keyframes modalIn{from{opacity:0;transform:translateY(12px)scale(.97)}to{opacity:1;transform:none}}
+.modal h3{font-size:15px;font-weight:800;margin-bottom:4px}
+.modal .modal-sub{font-size:11px;color:var(--text3);margin-bottom:16px}
+.modal label{font-size:11.5px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;margin-top:12px}
+.modal input,.modal textarea,.modal select{width:100%;padding:8px 10px;border-radius:7px;border:1px solid var(--border);font-size:12.5px;font-family:inherit;outline:none;background:var(--bg)}
+.modal input:focus,.modal textarea:focus,.modal select:focus{border-color:#3B82F6}
+.modal textarea{resize:vertical;min-height:64px}
+.modal-info{padding:8px 10px;border-radius:6px;background:#F0F4FF;font-size:11px;color:#3B5998;margin-bottom:8px}
+.modal-level{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;margin-right:4px}
+.modal-btns{display:flex;gap:8px;margin-top:18px;justify-content:flex-end}
+.modal-btn{padding:8px 18px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .12s}
+.modal-btn.cancel{background:var(--bg);color:var(--text2);border:1px solid var(--border)}
+.modal-btn.cancel:hover{background:#E8EAF0}
+.modal-btn.submit{background:#3B82F6;color:#fff}
+.modal-btn.submit:hover{background:#2563EB}
+.modal-btn.submit:disabled{opacity:.5;cursor:default}
+
+.loading-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;gap:16px;width:100%}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:#3B82F6;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:13px;color:var(--text3)}
+.toast{position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:10px;color:#fff;font-size:12.5px;font-weight:600;z-index:600;animation:toastIn .25s ease;box-shadow:0 4px 20px rgba(0,0,0,.2)}
+.toast.success{background:#059669}.toast.error{background:#DC2626}
+@keyframes toastIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.footer{padding:10px 28px;border-top:1px solid var(--border);display:flex;justify-content:space-between;color:var(--text3);font-size:10px;flex-wrap:wrap;gap:6px}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
+::-webkit-scrollbar{height:5px;width:5px}
+::-webkit-scrollbar-track{background:#ECEEF3;border-radius:3px}
+::-webkit-scrollbar-thumb{background:#C0C5D0;border-radius:3px}
+</style>
+</head>
+<body>
+
+<div class="header"><div class="header-row">
+  <div class="logo">🌏</div>
+  <div><div class="header-title">SKT 고객여정 MANAGER</div><div class="header-sub">Customer Journey Map — L1~L4 · Google Sheets 실시간 연동</div></div>
+  <div class="header-right">
+    <div class="stat-pills" id="statPills"></div>
+    <div class="search-box"><input type="text" id="searchInput" placeholder="여정 검색 (코드, 이름)"></div>
+    <div class="expand-group">
+      <button class="ebtn active" id="ebtnFold" onclick="expandTo('fold')">전체 접기</button>
+      <button class="ebtn" id="ebtnL2" onclick="expandTo('L2')">L2까지</button>
+      <button class="ebtn" id="ebtnL3" onclick="expandTo('L3')">L3까지</button>
+      <button class="ebtn" id="ebtnAll" onclick="expandTo('all')">전체 펼치기</button>
+    </div>
+    <button class="btn btn-feedback" onclick="openFeedbackModal()">💬 의견 남기기</button>
+    <button class="btn btn-pend" id="btnPending" onclick="scrollToPending()" style="display:none">⏳ 대기 <b id="pendingNum">0</b>건</button>
+    <button class="btn" onclick="loadData()" title="새로고침">🔄</button>
+  </div>
+</div></div>
+
+<div class="flow-bar" id="flowBar"></div>
+<div class="journey-wrap"><div class="l1-grid" id="l1Grid">
+  <div class="loading-screen"><div class="spinner"></div><div class="loading-text">구글시트에서 데이터를 불러오는 중...</div></div>
+</div></div>
+<div class="footer"><span id="footerMeta">데이터 로딩 중...</span><span>관련 문의: Next플랫폼CX팀 박민재 매니저</span></div>
+
+<!-- ADD MODAL -->
+<div class="modal-overlay" id="addModal"><div class="modal">
+  <h3 id="addModalTitle">➕ 모듈 추가 요청</h3>
+  <div class="modal-sub">관리자 검토 후 여정에 반영됩니다.</div>
+  <div class="modal-info" id="addModalContext"></div>
+  <label id="addNameLabel">추가할 모듈명 *</label>
+  <input type="text" id="addModuleName" placeholder="">
+  <label>요청 사유 / 설명</label>
+  <textarea id="addModuleDesc" placeholder="왜 추가가 필요한지 간단히 설명해 주세요"></textarea>
+  <label>요청자 이름 *</label>
+  <input type="text" id="addRequester" placeholder="">
+  <div class="modal-btns">
+    <button class="modal-btn cancel" onclick="closeModal('addModal')">취소</button>
+    <button class="modal-btn submit" id="addSubmitBtn" onclick="submitAdd()">요청 보내기</button>
+  </div>
+</div></div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="editModal"><div class="modal">
+  <h3 id="editModalTitle">✏️ 편집 요청</h3>
+  <div class="modal-sub">수정 또는 삭제 의견을 제출합니다.</div>
+  <div class="modal-info" id="editModalContext"></div>
+  <label>요청 유형 *</label>
+  <select id="editType"><option value="수정">수정 제안</option><option value="삭제">삭제 제안</option></select>
+  <label>의견 / 사유 *</label>
+  <textarea id="editContent" placeholder="어떻게 수정하면 좋을지, 또는 삭제 사유를 작성해 주세요"></textarea>
+  <label>요청자 이름 *</label>
+  <input type="text" id="editRequester" placeholder="">
+  <div class="modal-btns">
+    <button class="modal-btn cancel" onclick="closeModal('editModal')">취소</button>
+    <button class="modal-btn submit" id="editSubmitBtn" onclick="submitEdit()">요청 보내기</button>
+  </div>
+</div></div>
+
+<!-- GENERAL FEEDBACK MODAL -->
+<div class="modal-overlay" id="feedbackModal"><div class="modal">
+  <h3>💬 일반 의견 남기기</h3>
+  <div class="modal-sub">여정 구조 전반에 대한 의견, 제안, 질문 등을 자유롭게 남겨주세요.</div>
+  <label>관련 여정 단계 (선택)</label>
+  <select id="fbL1">
+    <option value="">전체 / 해당없음</option>
+    <option value="인입">인입</option>
+    <option value="탐색">탐색</option>
+    <option value="구매/가입/개통">구매/가입/개통</option>
+    <option value="서비스 이용">서비스 이용</option>
+    <option value="유지 및 확장">유지 및 확장</option>
+    <option value="이탈">이탈</option>
+  </select>
+  <label>의견 내용 *</label>
+  <textarea id="fbContent" placeholder="" style="min-height:80px"></textarea>
+  <label>요청자 이름 *</label>
+  <input type="text" id="fbRequester" placeholder="">
+  <div class="modal-btns">
+    <button class="modal-btn cancel" onclick="closeModal('feedbackModal')">취소</button>
+    <button class="modal-btn submit" id="fbSubmitBtn" onclick="submitFeedback()">의견 보내기</button>
+  </div>
+</div></div>
+
+<script>
+const API='https://script.google.com/macros/s/AKfycbwY-ZSmquMDmWaY39m_-CeTauo5ZXKrkyt8taQCsc-32bFj0YG_AjUEgwKz7mF01D2nEg/exec';
+const L1M={"인입":{i:"🚪",bg:"#EFF6FF",bd:"#3B82F6",ac:"#2563EB",tg:"#DBEAFE",tx:"#1E40AF"},"탐색":{i:"🔍",bg:"#F5F3FF",bd:"#8B5CF6",ac:"#7C3AED",tg:"#EDE9FE",tx:"#5B21B6"},"구매/가입/개통":{i:"🛒",bg:"#FDF2F8",bd:"#EC4899",ac:"#DB2777",tg:"#FCE7F3",tx:"#9D174D"},"서비스 이용":{i:"⚙️",bg:"#FFFBEB",bd:"#F59E0B",ac:"#D97706",tg:"#FEF3C7",tx:"#92400E"},"유지 및 확장":{i:"📈",bg:"#ECFDF5",bd:"#10B981",ac:"#059669",tg:"#D1FAE5",tx:"#065F46"},"이탈":{i:"🚶",bg:"#FEF2F2",bd:"#EF4444",ac:"#DC2626",tg:"#FEE2E2",tx:"#991B1B"}};
+const SC={"T4S IA data":{b:"#DBEAFE",t:"#1D4ED8"},"Web search":{b:"#FEF3C7",t:"#B45309"},"고객센터voc":{b:"#FCE7F3",t:"#BE185D"},"고객센터voc data":{b:"#FCE7F3",t:"#BE185D"}};
+
+let DATA=[],PENDING=[];
+const EX={l1:{},l2:{},l3:{}};
+let addCtx=null,editCtx=null;
+
+async function loadData(){
+  try{
+    document.getElementById('l1Grid').innerHTML='<div class="loading-screen"><div class="spinner"></div><div class="loading-text">구글시트에서 데이터를 불러오는 중...</div></div>';
+    const r=await fetch(API);const j=await r.json();
+    if(!j.success)throw new Error(j.error||'API 오류');
+    DATA=parseH(j.journey);PENDING=j.pendingReviews||[];
+    const m=j.meta||{};
+    document.getElementById('footerMeta').textContent='마지막 동기화: '+(m.timestamp||'-')+' · 여정 '+(m.journeyRowCount||'?')+'행 · 검토 대기 '+(m.pendingCount||0)+'건';
+    rStats();render();upb();
+  }catch(e){
+    document.getElementById('l1Grid').innerHTML='<div class="loading-screen"><div style="font-size:32px">⚠️</div><div class="loading-text">데이터 로드 실패: '+e.message+'</div><button class="btn" onclick="loadData()" style="margin-top:8px;color:#333">다시 시도</button></div>';
+  }
+}
+function parseH(rows){
+  const res=[];let c1=null,c2=null,c3=null;
+  for(const r of rows){
+    if(r.l1&&isNaN(r.l1)){c1={name:r.l1,l2s:[]};res.push(c1);}
+    if(!c1)continue;
+    if(r.l2Code){c2={code:r.l2Code,name:r.l2Name||r.l2Code,l3s:[]};c1.l2s.push(c2);}
+    if(!c2)continue;
+    if(r.l3Code||r.l3Name){c3={code:r.l3Code||'',name:r.l3Name||r.l3Code||'',l4s:[]};c2.l3s.push(c3);}
+    if(!c3)continue;
+    if(r.l4Code||r.l4Name){c3.l4s.push({code:r.l4Code||'',name:r.l4Name||'',src:r.source||''});}
+  }
+  return res;
+}
+
+function expandTo(mode){
+  ['ebtnFold','ebtnL2','ebtnL3','ebtnAll'].forEach(id=>document.getElementById(id).classList.remove('active'));
+  if(mode==='fold') document.getElementById('ebtnFold').classList.add('active');
+  else if(mode==='L2') document.getElementById('ebtnL2').classList.add('active');
+  else if(mode==='L3') document.getElementById('ebtnL3').classList.add('active');
+  else document.getElementById('ebtnAll').classList.add('active');
+  DATA.forEach((l1,i)=>{
+    EX.l1[i]=(mode!=='fold');
+    l1.l2s.forEach((l2,j)=>{
+      const k2=i+'_'+j;
+      EX.l2[k2]=(mode==='L3'||mode==='all');
+      l2.l3s.forEach((_,k)=>{EX.l3[k2+'_'+k]=(mode==='all');});
+    });
+  });
+  render();
+}
+function clearEB(){['ebtnFold','ebtnL2','ebtnL3','ebtnAll'].forEach(id=>document.getElementById(id).classList.remove('active'));}
+
+function getPendAdds(lv,pc){
+  return PENDING.filter(p=>{
+    if(lv==='L4')return p.reqType==='추가'&&p.l3Code===pc;
+    if(lv==='L3')return p.reqType==='추가_L3'&&p.l2Code===pc;
+    if(lv==='L2')return p.reqType==='추가_L2'&&p.l1===pc;
+    return false;
+  });
+}
+function getEditReqs(lv,c){
+  return PENDING.filter(p=>{
+    if(lv==='L4')return(p.reqType==='수정'||p.reqType==='삭제')&&p.l4Code===c;
+    if(lv==='L3')return(p.reqType==='수정_L3'||p.reqType==='삭제_L3')&&p.l3Code===c;
+    if(lv==='L2')return(p.reqType==='수정_L2'||p.reqType==='삭제_L2')&&p.l2Code===c;
+    return false;
+  });
+}
+function upb(){const b=document.getElementById('btnPending'),n=document.getElementById('pendingNum');if(PENDING.length>0){b.style.display='';n.textContent=PENDING.length;}else b.style.display='none';}
+function scrollToPending(){const e=document.querySelector('.l4-row.pending,.pend-card');if(e)e.scrollIntoView({behavior:'smooth',block:'center'});}
+
+function rStats(){
+  let a=0,b=0,c=0;DATA.forEach(l=>l.l2s.forEach(l2=>{a++;l2.l3s.forEach(l3=>{b++;c+=l3.l4s.length})}));
+  document.getElementById("statPills").innerHTML=[["L1",DATA.length,"#3B82F6"],["L2",a,"#8B5CF6"],["L3",b,"#EC4899"],["L4",c,"#F59E0B"]].map(([l,v,co])=>'<div class="stat-pill" style="background:'+co+'22"><span style="color:'+co+';font-weight:700">'+l+'</span> <b>'+v+'</b></div>').join("");
+}
+function st(s){if(!s)return'';const c=SC[s]||{b:"#F3F4F6",t:"#374151"};return'<span class="src-tag" style="background:'+c.b+';color:'+c.t+'">'+s+'</span>';}
+function esc(s){return(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,' ');}
+function rFlow(d){document.getElementById("flowBar").innerHTML=d.map((l,i)=>{const m=L1M[l.name]||L1M["인입"];return'<span class="flow-pill" style="background:'+m.ac+'" onclick="oL1('+i+')">'+m.i+' '+l.name+'</span>'+(i<d.length-1?'<span class="flow-arrow">→</span>':'');}).join("");}
+function rPendCard(p){return'<div class="pend-card"><span class="pending-badge">검토 대기</span><span class="pend-label">'+p.reqType.replace('_',' ')+'</span><span class="pend-content">'+p.content+'</span><span class="src-tag" style="background:#FEF3C7;color:#92400E">'+p.requester+'</span><span style="font-size:9px;color:var(--text3)">'+p.reqId+'</span></div>';}
+
+function rL4(l4,c,l1n,l2c,l2n,l3c,l3n){
+  const ed=l4.code?getEditReqs('L4',l4.code):[];
+  const dot=ed.length?'<div class="edit-dot" title="편집 요청 '+ed.length+'건"></div>':'';
+  const bd="'L4','"+[l1n,l2c,l2n,l3c,l3n,l4.code,l4.name].map(esc).join("','")+"'";
+  return'<div class="l4-row" style="border-left-color:'+c.bd+'22"><span class="l4-code" style="color:'+c.ac+'">'+(l4.code||'')+'</span><span class="l4-name">'+l4.name+'</span>'+dot+st(l4.src)+'<button class="l4-edit-btn" onclick="event.stopPropagation();oEM('+bd+')" title="편집 요청">✏️</button></div>';
+}
+function rPL4(p){return'<div class="l4-row pending" style="border-left-color:var(--pend-bd)"><span class="l4-code" style="color:var(--pend-tx)">'+p.reqId+'</span><span class="l4-name">'+p.content+'</span><span class="pending-badge">검토 대기</span><span class="src-tag" style="background:#FEF3C7;color:#92400E">'+p.requester+'</span></div>';}
+
+function rL3(l3,c,k,l1n,l2c,l2n){
+  const o=EX.l3[k]||false;
+  const l4a=l3.code?getPendAdds('L4',l3.code):[];
+  const l3e=l3.code?getEditReqs('L3',l3.code):[];
+  const tc=l3.l4s.length+l4a.length;
+  const aBd="'L4','"+[l1n,l2c,l2n,l3.code,l3.name,'',''].map(esc).join("','")+"'";
+  const eBd="'L3','"+[l1n,l2c,l2n,l3.code,l3.name,'',''].map(esc).join("','")+"'";
+  const dot=l3e.length?'<div class="edit-dot" title="L3 편집 요청 '+l3e.length+'건"></div>':'';
+  return'<div class="l3-block"><div class="l3-header" onclick="tL3(\''+k+'\')" style="background:'+(o?c.tg:'transparent')+'">'
+    +'<span class="l3-arrow'+(o?' open':'')+'" style="color:'+c.ac+'">▶</span>'
+    +'<span class="l3-code" style="color:'+c.ac+'">'+l3.code+'</span>'
+    +'<span class="l3-name" style="color:'+c.tx+'">'+l3.name+'</span>'+dot
+    +(l4a.length?'<span class="pending-badge">+'+l4a.length+'</span>':'')
+    +'<span class="l3-count">'+tc+'</span>'
+    +'<button class="l3-edit-btn" onclick="event.stopPropagation();oEM('+eBd+')" title="L3 편집 요청">✏️</button>'
+    +'</div>'+(o?'<div class="l3-body">'
+      +l3.l4s.map(l4=>rL4(l4,c,l1n,l2c,l2n,l3.code,l3.name)).join('')
+      +l4a.map(rPL4).join('')
+      +(l3.code?'<button class="add-btn l4-add" onclick="event.stopPropagation();oAM('+aBd+')">＋ L4 추가 요청</button>':'')
+    +'</div>':'')+'</div>';
+}
+
+function rL2(l2,c,k,l1n){
+  const o=EX.l2[k]||false;
+  const t4=l2.l3s.reduce((s,l)=>s+l.l4s.length,0);
+  const l3a=getPendAdds('L3',l2.code);
+  const l2e=getEditReqs('L2',l2.code);
+  const dot=l2e.length?'<div class="edit-dot" title="L2 편집 요청 '+l2e.length+'건"></div>':'';
+  const aL3="'L3','"+[l1n,l2.code,l2.name,'','','',''].map(esc).join("','")+"'";
+  const eL2="'L2','"+[l1n,l2.code,l2.name,'','','',''].map(esc).join("','")+"'";
+  return'<div class="l2-card" style="border-color:'+c.bd+'33;box-shadow:'+(o?'0 2px 10px '+c.bd+'12':'none')+'">'
+    +'<div class="l2-header" onclick="tL2(\''+k+'\')" style="background:'+(o?c.bg:'#FAFBFC')+'">'
+    +'<span class="l2-arrow'+(o?' open':'')+'" style="color:'+c.ac+'">▶</span>'
+    +'<span class="l2-code" style="background:'+c.tg+';color:'+c.ac+'">'+l2.code+'</span>'
+    +'<span class="l2-name">'+l2.name+'</span>'+dot
+    +(l3a.length?'<span class="pending-badge">+'+l3a.length+'</span>':'')
+    +'<div class="l2-counts"><span>L3:'+l2.l3s.length+'</span><span>L4:'+t4+'</span></div>'
+    +'<button class="l2-edit-btn" onclick="event.stopPropagation();oEM('+eL2+')" title="L2 편집 요청">✏️</button>'
+    +'</div>'+(o?'<div class="l2-body">'
+      +l2.l3s.map((l3,j)=>rL3(l3,c,k+'_'+j,l1n,l2.code,l2.name)).join('')
+      +l3a.map(rPendCard).join('')
+      +'<button class="add-btn" onclick="event.stopPropagation();oAM('+aL3+')">＋ L3 추가 요청</button>'
+    +'</div>':'')+'</div>';
+}
+
+function rL1(l1,idx){
+  const m=L1M[l1.name]||L1M["인입"];const o=EX.l1[idx]||false;
+  const tL3=l1.l2s.reduce((s,l)=>s+l.l3s.length,0);
+  const tL4=l1.l2s.reduce((s,l)=>s+l.l3s.reduce((s2,l3)=>s2+l3.l4s.length,0),0);
+  const l2a=getPendAdds('L2',l1.name);
+  const aL2="'L2','"+[l1.name,'','','','','',''].map(esc).join("','")+"'";
+  return'<div class="l1-stage" id="l1-'+idx+'">'
+    +'<div class="l1-card" onclick="tL1('+idx+')" style="background:'+m.bg+';border-color:'+m.bd+';box-shadow:'+(o?'0 4px 18px '+m.bd+'20':'0 1px 3px '+m.bd+'12')+'">'
+    +'<div class="l1-icon">'+m.i+'</div>'
+    +'<div class="l1-name" style="color:'+m.tx+'">'+l1.name+'</div>'
+    +'<div class="l1-stats">'
+    +'<span class="l1-stat" style="background:'+m.tg+';color:'+m.ac+'">L2:'+l1.l2s.length+'</span>'
+    +'<span class="l1-stat" style="background:'+m.tg+';color:'+m.ac+'">L3:'+tL3+'</span>'
+    +'<span class="l1-stat" style="background:'+m.tg+';color:'+m.ac+'">L4:'+tL4+'</span>'
+    +'</div>'
+    +'<div class="l1-toggle" style="background:'+(o?m.ac:m.tg)+';color:'+(o?'#fff':m.ac)+';border-color:'+m.bd+'">'+(o?'−':'+')+'</div>'
+    +'</div>'
+    +(o?'<div class="l2-wrap">'
+      +l1.l2s.map((l2,j)=>rL2(l2,m,idx+'_'+j,l1.name)).join('')
+      +l2a.map(rPendCard).join('')
+      +'<button class="add-btn" onclick="event.stopPropagation();oAM('+aL2+')">＋ L2 추가 요청</button>'
+    +'</div>':'')+'</div>';
+}
+
+function render(){
+  const q=document.getElementById("searchInput").value.toLowerCase().trim();
+  let d=DATA;
+  if(q){d=DATA.map(l1=>{const l2s=l1.l2s.map(l2=>{const l3s=l2.l3s.map(l3=>{const l4s=l3.l4s.filter(l4=>(l4.name||'').toLowerCase().includes(q)||(l4.code||'').toLowerCase().includes(q));return{...l3,l4s};}).filter(l3=>l3.l4s.length>0||(l3.name||'').toLowerCase().includes(q)||(l3.code||'').toLowerCase().includes(q));return{...l2,l3s};}).filter(l2=>l2.l3s.length>0||(l2.name||'').toLowerCase().includes(q)||(l2.code||'').toLowerCase().includes(q));return{...l1,l2s};}).filter(l1=>l1.l2s.length>0);}
+  rFlow(d);document.getElementById("l1Grid").innerHTML=d.map((l1,i)=>rL1(l1,i)).join("");
+}
+
+function tL1(i){EX.l1[i]=!EX.l1[i];clearEB();render();}
+function tL2(k){EX.l2[k]=!EX.l2[k];clearEB();render();}
+function tL3(k){EX.l3[k]=!EX.l3[k];clearEB();render();}
+function oL1(i){EX.l1[i]=true;clearEB();render();setTimeout(()=>{const e=document.getElementById('l1-'+i);if(e)e.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'})},80);}
+
+function openModal(id){document.getElementById(id).classList.add('show');}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+
+function oAM(lv,l1,l2c,l2n,l3c,l3n){
+  addCtx={level:lv,l1,l2Code:l2c,l2Name:l2n,l3Code:l3c,l3Name:l3n};
+  const T={L2:'➕ L2 핵심 액티비티 추가 요청',L3:'➕ L3 상세 액티비티 추가 요청',L4:'➕ L4 모듈 추가 요청'};
+  const LB={L2:'추가할 L2 이름 *',L3:'추가할 L3 이름 *',L4:'추가할 L4 모듈명 *'};
+  const PH={L2:'예: 인터넷/IPTV 탐색',L3:'예: 요금제 비교',L4:'예: 휴대폰 보험 비교 선택'};
+  let ctx='';
+  if(lv==='L2')ctx='<span class="modal-level" style="background:#3B82F622;color:#2563EB">L1</span><b>'+l1+'</b> 하위에 L2 추가';
+  else if(lv==='L3')ctx='<span class="modal-level" style="background:#8B5CF622;color:#7C3AED">L2</span><b>'+l2n+'</b> 하위에 L3 추가';
+  else ctx='<span class="modal-level" style="background:#EC489922;color:#DB2777">L3</span><b>'+l3n+'</b> 하위에 L4 추가';
+  document.getElementById('addModalTitle').textContent=T[lv];
+  document.getElementById('addNameLabel').textContent=LB[lv];
+  document.getElementById('addModuleName').placeholder=PH[lv];
+  document.getElementById('addModalContext').innerHTML=ctx;
+  document.getElementById('addModuleName').value='';document.getElementById('addModuleDesc').value='';
+  document.getElementById('addRequester').value='';
+  document.getElementById('addSubmitBtn').disabled=false;document.getElementById('addSubmitBtn').textContent='요청 보내기';
+  openModal('addModal');setTimeout(()=>document.getElementById('addModuleName').focus(),200);
+}
+
+function oEM(lv,l1,l2c,l2n,l3c,l3n,l4c,l4n){
+  editCtx={level:lv,l1,l2Code:l2c,l2Name:l2n,l3Code:l3c,l3Name:l3n,l4Code:l4c,l4Name:l4n};
+  const T={L2:'✏️ L2 편집 요청',L3:'✏️ L3 편집 요청',L4:'✏️ L4 편집 요청'};
+  let ctx='';
+  if(lv==='L2')ctx='<span class="modal-level" style="background:#8B5CF622;color:#7C3AED">L2</span><b>'+l2n+'</b> <span style="opacity:.6">('+l2c+')</span>';
+  else if(lv==='L3')ctx='<span class="modal-level" style="background:#EC489922;color:#DB2777">L3</span><b>'+l3n+'</b> <span style="opacity:.6">('+l3c+')</span>';
+  else ctx='<span class="modal-level" style="background:#F59E0B22;color:#D97706">L4</span><b>'+l4n+'</b> <span style="opacity:.6">('+l4c+')</span>';
+  document.getElementById('editModalTitle').textContent=T[lv];
+  document.getElementById('editModalContext').innerHTML=ctx;
+  document.getElementById('editType').value='수정';document.getElementById('editContent').value='';
+  document.getElementById('editRequester').value='';
+  document.getElementById('editSubmitBtn').disabled=false;document.getElementById('editSubmitBtn').textContent='요청 보내기';
+  openModal('editModal');setTimeout(()=>document.getElementById('editContent').focus(),200);
+}
+
+// ── GENERAL FEEDBACK MODAL ──
+function openFeedbackModal(){
+  document.getElementById('fbL1').value='';
+  document.getElementById('fbContent').value='';
+  document.getElementById('fbRequester').value='';
+  document.getElementById('fbSubmitBtn').disabled=false;
+  document.getElementById('fbSubmitBtn').textContent='의견 보내기';
+  openModal('feedbackModal');
+  setTimeout(()=>document.getElementById('fbContent').focus(),200);
+}
+
+async function submitFeedback(){
+  const l1=document.getElementById('fbL1').value;
+  const ct=document.getElementById('fbContent').value.trim();
+  const rq=document.getElementById('fbRequester').value.trim();
+  if(!ct||!rq){toast('의견과 이름을 입력해 주세요','error');return;}
+  const btn=document.getElementById('fbSubmitBtn');btn.disabled=true;btn.textContent='전송 중...';
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({
+      reqType:'일반',
+      l1:l1,l2Code:'',l2Name:'',l3Code:'',l3Name:'',l4Code:'',l4Name:'',
+      content:ct,requester:rq
+    })});
+    const j=await r.json();if(!j.success)throw new Error(j.error);
+    localStorage.setItem('cjm_user',rq);closeModal('feedbackModal');
+    toast('✅ 의견이 접수되었습니다 ('+j.reqId+')','success');await loadData();
+  }catch(e){toast('❌ 전송 실패: '+e.message,'error');btn.disabled=false;btn.textContent='의견 보내기';}
+}
+
+async function submitAdd(){
+  const nm=document.getElementById('addModuleName').value.trim();
+  const ds=document.getElementById('addModuleDesc').value.trim();
+  const rq=document.getElementById('addRequester').value.trim();
+  if(!nm||!rq){toast('모듈명과 이름을 입력해 주세요','error');return;}
+  const btn=document.getElementById('addSubmitBtn');btn.disabled=true;btn.textContent='전송 중...';
+  const lv=addCtx.level;const rt=lv==='L4'?'추가':'추가_'+lv;
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({reqType:rt,l1:addCtx.l1,l2Code:addCtx.l2Code,l2Name:addCtx.l2Name,l3Code:addCtx.l3Code,l3Name:addCtx.l3Name,l4Code:'',l4Name:'',content:(ds?nm+' — '+ds:nm),requester:rq})});
+    const j=await r.json();if(!j.success)throw new Error(j.error);
+    localStorage.setItem('cjm_user',rq);closeModal('addModal');
+    toast('✅ '+lv+' 추가 요청 완료 ('+j.reqId+')','success');await loadData();
+  }catch(e){toast('❌ 전송 실패: '+e.message,'error');btn.disabled=false;btn.textContent='요청 보내기';}
+}
+
+async function submitEdit(){
+  const tp=document.getElementById('editType').value;
+  const ct=document.getElementById('editContent').value.trim();
+  const rq=document.getElementById('editRequester').value.trim();
+  if(!ct||!rq){toast('의견과 이름을 입력해 주세요','error');return;}
+  const btn=document.getElementById('editSubmitBtn');btn.disabled=true;btn.textContent='전송 중...';
+  const lv=editCtx.level;const rt=lv==='L4'?tp:tp+'_'+lv;
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({reqType:rt,l1:editCtx.l1,l2Code:editCtx.l2Code,l2Name:editCtx.l2Name,l3Code:editCtx.l3Code,l3Name:editCtx.l3Name,l4Code:editCtx.l4Code,l4Name:editCtx.l4Name,content:'['+tp+'_'+lv+'] '+ct,requester:rq})});
+    const j=await r.json();if(!j.success)throw new Error(j.error);
+    localStorage.setItem('cjm_user',rq);closeModal('editModal');
+    toast('✅ '+lv+' '+tp+' 요청 완료 ('+j.reqId+')','success');await loadData();
+  }catch(e){toast('❌ 전송 실패: '+e.message,'error');btn.disabled=false;btn.textContent='요청 보내기';}
+}
+
+function toast(m,t){const e=document.createElement('div');e.className='toast '+t;e.textContent=m;document.body.appendChild(e);setTimeout(()=>e.remove(),3500);}
+
+document.getElementById("searchInput").addEventListener("input",()=>render());
+document.querySelectorAll('.modal-overlay').forEach(el=>{el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('show')});});
+loadData();
+</script>
+</body>
+</html>
