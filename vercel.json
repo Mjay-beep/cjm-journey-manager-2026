@@ -1,5 +1,0 @@
-{
-  "rewrites": [
-    { "source": "/", "destination": "/skt_cjm_dashboard_v3.html" }
-  ]
-}
