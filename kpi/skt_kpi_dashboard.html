@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>고객 여정별 KPI 관리</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css" rel="stylesheet">
+<style>
+:root{--bg:#F7F8FB;--wh:#FFF;--g1:#F1F3F5;--g2:#E9ECEF;--g3:#DEE2E6;--tx:#212529;--tx2:#495057;--tx3:#868E96;--tx4:#ADB5BD;--ac:#2563EB;--acL:#EFF6FF;--gn:#059669;--gnL:#ECFDF5;--rd:#DC2626;--rdL:#FEF2F2;--pp:#7C3AED;--ppL:#F5F3FF;--sh:0 1px 3px rgba(0,0,0,.05);--sh2:0 4px 12px rgba(0,0,0,.08)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* Header - CJM Manager 스타일 */
+.header{background:linear-gradient(135deg,#0C111D 0%,#1C2333 50%,#0C111D 100%);padding:20px 32px 16px;color:#fff;position:sticky;top:0;z-index:100;border-bottom:1px solid #2a3040}
+.header-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.logo{width:34px;height:34px;border-radius:9px;background:#2E3B5E;display:flex;align-items:center;justify-content:center;font-size:18px;line-height:1;flex-shrink:0}
+.header-title{font-size:18px;font-weight:800;letter-spacing:-.4px}
+.header-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.header-link{padding:6px 14px;border-radius:7px;border:1px solid #3A4260;background:transparent;color:#C8CDD9;font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;transition:.15s;white-space:nowrap}
+.header-link:hover{background:#242D44;color:#fff}
+.header-meta{font-size:11px;color:#5A6178;font-family:monospace}
+.header-desc{font-size:12.5px;color:#7B8399;margin-top:8px;line-height:1.6;max-width:860px}
+
+.main{max-width:1400px;margin:0 auto;padding:28px 40px 60px}
+
+.ctrls-bar{display:flex;gap:8px;margin-bottom:20px}
+.ctrl-btn{padding:7px 16px;border-radius:7px;border:1px solid var(--g3);background:var(--wh);color:var(--tx2);cursor:pointer;font-size:12px;font-family:'Pretendard',sans-serif;font-weight:500;transition:.12s;box-shadow:var(--sh)}
+.ctrl-btn:hover{background:var(--g1);color:var(--tx)}
+
+.tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;margin-right:5px;vertical-align:middle;letter-spacing:.3px}
+.tag-l1{background:#E0E7FF;color:#3730A3}.tag-l2{background:#DBEAFE;color:#1E40AF}
+
+.l1-sec{margin-bottom:24px}
+.l1-bar{display:flex;align-items:center;gap:10px;padding:14px 20px;background:var(--wh);border:1px solid var(--g2);border-radius:10px;box-shadow:var(--sh)}
+.l1-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.l1-name{font-size:15px;font-weight:700;flex:1}
+
+.l1-kpis{background:var(--wh);border:1px solid var(--g2);border-top:none;border-radius:0 0 10px 10px;overflow:hidden}
+.l1-kpis:empty{display:none}
+
+.l2-list{margin:8px 0 0 20px}
+.l2-card{background:var(--wh);border:1px solid var(--g2);border-radius:8px;margin-bottom:6px;box-shadow:var(--sh);overflow:hidden}
+.l2-hdr{display:flex;align-items:center;gap:8px;padding:11px 16px;cursor:pointer;user-select:none}
+.l2-chv{width:15px;height:15px;color:var(--tx4);transition:transform .2s;flex-shrink:0}
+.l2-card.open .l2-chv{transform:rotate(180deg)}
+.l2-nm{font-size:13px;font-weight:600;flex:1}
+.l2-badge{font-size:11px;color:var(--tx3);font-family:monospace;padding:1px 6px;background:var(--g1);border-radius:3px}
+.l2-body{display:none;border-top:1px solid var(--g1)}.l2-card.open .l2-body{display:block}
+
+.kt{width:100%;border-collapse:collapse}
+.kt th{text-align:left;font-size:10px;color:var(--tx3);padding:8px 16px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;background:var(--g1);border-bottom:1px solid var(--g2)}
+.kt td{padding:8px 16px;font-size:13px;border-bottom:1px solid var(--g1);vertical-align:top}
+.kt tr:last-child td{border-bottom:none}.kt tr:hover td{background:#FAFBFC}
+.kpi-name{font-weight:600;color:var(--tx)}.kpi-desc{color:var(--tx2);font-size:12px;line-height:1.5}
+.kpi-formula{color:var(--tx3);font-size:11px;font-family:monospace;line-height:1.5}
+.tc{font-size:10px;font-weight:600;display:block;padding:2px 7px;border-radius:3px;text-align:center;white-space:nowrap;line-height:1.4}
+.tc-일간{background:var(--gnL);color:var(--gn)}.tc-월간{background:var(--acL);color:var(--ac)}.tc-분기{background:var(--ppL);color:var(--pp)}
+.tc-일간\/월간{background:#FFF7ED;color:#C2410C}
+.act-btns{display:flex;gap:3px;opacity:0;transition:.1s}
+.kt tr:hover .act-btns{opacity:1}
+.act-btn{border:1px solid var(--g3);border-radius:4px;cursor:pointer;font-size:11px;padding:3px 10px;background:var(--wh);color:var(--tx2);font-family:'Pretendard',sans-serif;font-weight:500;transition:.1s;white-space:nowrap}
+.act-btn:hover{background:var(--g1)}.act-btn.del{color:var(--rd)}.act-btn.del:hover{background:var(--rdL);border-color:var(--rd)}
+.add-row{padding:8px 16px;cursor:pointer;color:var(--ac);font-size:12px;font-weight:600;transition:.1s;display:inline-flex;align-items:center;gap:5px;border:1px solid var(--ac);border-radius:6px;margin:8px 14px 10px;background:transparent}
+.add-row:hover{background:var(--acL)}
+.add-l2-wrap{margin:8px 0 0 20px;position:relative;display:inline-block}
+.add-l2{padding:10px 16px;border:1px dashed var(--g3);border-radius:8px;cursor:pointer;color:var(--tx3);font-size:12px;font-weight:500;transition:.12s;display:flex;align-items:center;gap:6px}
+.add-l2:hover{border-color:var(--ac);color:var(--ac);background:var(--acL)}
+.tooltip{display:none;position:absolute;bottom:calc(100% + 6px);left:0;background:var(--tx);color:#fff;font-size:11px;padding:7px 12px;border-radius:6px;width:300px;line-height:1.5;z-index:10;box-shadow:var(--sh2)}
+.tooltip::after{content:'';position:absolute;top:100%;left:20px;border:5px solid transparent;border-top-color:var(--tx)}
+.add-l2-wrap:hover .tooltip{display:block}
+
+.ft{max-width:1400px;margin:0 auto;padding:20px 40px;text-align:center;color:var(--tx4);font-size:11px;display:flex;flex-direction:column;gap:3px}
+
+.mbg{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.25);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.mbg.show{display:flex}
+.modal{background:var(--wh);border-radius:14px;padding:26px;width:500px;max-width:92vw;box-shadow:var(--sh2)}
+.modal h3{font-size:17px;font-weight:700;margin-bottom:2px}
+.modal .msub{font-size:12px;color:var(--tx3);margin-bottom:14px}
+.modal label{font-size:11px;color:var(--tx2);display:block;margin-bottom:3px;margin-top:12px;font-weight:600}
+.modal input,.modal textarea,.modal select{width:100%;padding:9px 12px;border:1px solid var(--g3);border-radius:7px;background:var(--wh);color:var(--tx);font-size:13px;font-family:'Pretendard',sans-serif;outline:none;transition:.12s}
+.modal input:focus,.modal textarea:focus,.modal select:focus{border-color:var(--ac);box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+.modal textarea{resize:vertical;min-height:50px}
+.mbtns{display:flex;gap:6px;margin-top:18px;justify-content:flex-end}
+.mbtns button{padding:9px 20px;border-radius:7px;border:none;font-size:13px;cursor:pointer;font-family:'Pretendard',sans-serif;font-weight:600;transition:.12s}
+.mbtns .ok{background:var(--ac);color:#fff}.mbtns .ok:hover{background:#1D4ED8}
+.mbtns .danger{background:var(--rd);color:#fff}.mbtns .danger:hover{background:#B91C1C}
+.mbtns .cc{background:var(--g1);color:var(--tx2);border:1px solid var(--g2)}.mbtns .cc:hover{background:var(--g2)}
+.cbox{background:var(--g1);padding:12px 14px;border-radius:8px;margin:12px 0;border:1px solid var(--g2)}
+.cbox .ck{font-weight:700;font-size:14px}.cbox .cd{font-size:12px;color:var(--tx2);margin-top:2px;line-height:1.5}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(16px);padding:8px 20px;border-radius:7px;font-size:12px;font-weight:500;z-index:300;opacity:0;transition:.3s;pointer-events:none;box-shadow:var(--sh2)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.toast.ok{background:#065F46;color:#A7F3D0}
+
+@media(max-width:768px){.header{padding:14px 16px}.main{padding:16px 14px 40px}.l2-list{margin-left:10px}.kt th,.kt td{padding:5px 8px}.act-btns{opacity:1}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-row">
+    <div class="logo">📊</div>
+    <div class="header-title">고객 여정별 KPI 관리</div>
+    <div class="header-right">
+      <span class="header-meta" id="meta"></span>
+      <a class="header-link" href="https://cjm-journey-manager-2026.vercel.app/" target="_blank">🌏 SKT 고객여정 MANAGER 바로가기</a>
+    </div>
+  </div>
+  <div class="header-desc">이 사이트는 고객 여정별 KPI 지표를 관리하는 사이트입니다. KPI 지표는 L1과 L2의 고객 여정 단계까지만 관리합니다. 여정별 필요 KPI 지표와 설명을 자유롭게 입력하시면 됩니다.</div>
+</div>
+<div class="main" id="main"></div>
+<div class="ft"><span>관련 문의: Next플랫폼CX팀 박민재 매니저</span><span>Next플랫폼CX팀 · 고객여정 KPI Dashboard</span></div>
+<div class="mbg" id="mbg" onclick="if(event.target===this)cm()"><div class="modal" id="mdl"></div></div>
+<div class="toast" id="toast"></div>
+<iframe name="_sf" id="_sf" style="display:none"></iframe>
+
+<script>
+const API='https://script.google.com/macros/s/AKfycbwckTK8mJb1nf3ZZ1rPG7114DJJzgu0T93wdQi4S6LpvHf3MqqIlnxxa7zuk7b33RJyVA/exec';
+// 8열: L1, L2, KPI지표명, KPI설명, 산식/정의, 측정주기, 수정한사람, 수정내용
+const E=[["인입", "", "전체 인입 전환율 (Acquisition Conversion Rate)", "모든 채널을 통해 유입된 고객이 서비스 탐색/이용으로 전환된 비율을 측정합니다. Salesforce의 Lead Conversion Rate에 해당합니다.", "전환 고객 수 / 전체 유입 수 × 100", "월간", "", ""], ["인입", "", "채널별 고객획득비용 (CAC)", "고객 1인 획득에 소요된 채널별 평균 비용을 측정합니다. Adobe Analytics/Salesforce Marketing Cloud에서 핵심 지표로 활용됩니다.", "채널별 마케팅 비용 / 채널별 신규 획득 수", "월간", "", ""], ["인입", "니즈 발생", "채널별 유입 비율", "전체 유입 대비 각 채널(TV/온라인/SNS/추천 등)을 통한 유입 비율을 측정합니다. Adobe Analytics의 Marketing Channel 리포트에 해당합니다.", "채널별 유입 수 / 전체 유입 수 × 100", "월간", "", ""], ["인입", "(T4S) 공식 앱/사이트 인입", "DAU / MAU", "일간·월간 앱 접속 고유 사용자 수 및 Stickiness(DAU/MAU)를 측정합니다. Firebase/GA4의 핵심 활성도 지표입니다.", "DAU, MAU, Stickiness = DAU / MAU × 100", "일간/월간", "", ""], ["인입", "(T4S) 공식 앱/사이트 인입", "바운스율 (Bounce Rate)", "단일 페이지만 조회하고 이탈한 세션 비율을 측정합니다. GA4/Adobe Analytics의 기본 세션 품질 지표입니다.", "단일 페이지 세션 / 전체 세션 × 100", "일간", "", ""], ["인입", "(대리점/판매점) 방문", "매장 방문→상담 전환율", "매장 방문 고객 중 실제 상담으로 전환된 비율을 측정합니다. Salesforce의 Walk-in Conversion Rate에 해당합니다.", "상담 진행 수 / 매장 방문 수 × 100", "월간", "", ""], ["인입", "푸시/알림 인입", "푸시 오픈율 (Push Open Rate)", "푸시를 수신한 사용자 중 실제 클릭한 비율을 측정합니다. Salesforce Marketing Cloud/Braze의 핵심 메시징 지표입니다.", "푸시 클릭 수 / 푸시 수신 수 × 100", "일간", "", ""], ["인입", "고객센터 전화 인입", "첫통화 해결률 (FCR)", "고객 문의가 첫 번째 통화에서 해결된 비율을 측정합니다. Salesforce Service Cloud의 핵심 CS 효율 지표입니다.", "첫 통화 해결 건 / 전체 상담 건 × 100", "월간", "", ""], ["인입", "고객센터 전화 인입", "평균 대기시간 (ASA)", "고객이 상담사 연결까지 대기하는 평균 시간을 측정합니다. Genesys/Salesforce Service Cloud의 표준 SLA 지표입니다.", "총 대기시간 / 응대 건수", "일간", "", ""], ["인입", "디지털/챗봇 상담 인입", "챗봇 자동해결률 (Bot Resolution Rate)", "챗봇이 상담사 전환 없이 자동으로 해결한 상담 비율을 측정합니다. Salesforce Einstein Bot의 핵심 AI 효율 지표입니다.", "자동해결 건 / 전체 챗봇 상담 건 × 100", "월간", "", ""], ["인입", "외부 채널 인입", "외부 채널 전환율", "외부 제휴 채널(비교사이트, 제휴앱 등)로 유입된 사용자의 서비스 전환 비율을 측정합니다.", "전환 수 / 외부 채널 유입 수 × 100", "월간", "", ""], ["탐색", "", "탐색→주문 전환율 (Browse-to-Order Rate)", "탐색 단계에 진입한 고객 중 실제 주문/가입으로 전환된 비율을 측정합니다. Adobe Analytics의 Product Conversion Funnel에 해당합니다.", "주문·가입 수 / 탐색 세션 수 × 100", "월간", "", ""], ["탐색", "", "평균 탐색 세션 시간", "탐색 단계에서 고객이 머무는 평균 시간을 측정합니다. 탐색 깊이와 참여도를 나타내는 GA4 기본 지표입니다.", "탐색 총 세션 시간 / 탐색 세션 수", "일간", "", ""], ["탐색", "상품/서비스 검색", "검색 CTR (Search Click-Through Rate)", "검색 결과에서 실제 클릭이 발생한 비율을 측정합니다. Algolia/Adobe Search의 검색 품질 핵심 지표입니다.", "결과 클릭 수 / 검색 수행 수 × 100", "일간", "", ""], ["탐색", "상품/서비스 검색", "Zero Result 비율", "검색 결과가 0건인 검색의 비율로, 검색 품질을 나타냅니다. 검색엔진 최적화의 핵심 모니터링 지표입니다.", "결과 0건 수 / 전체 검색 수 × 100", "일간", "", ""], ["탐색", "휴대폰 탐색", "상세페이지 전환율 (PDP Conversion Rate)", "단말 상세 페이지 조회 후 주문으로 전환된 비율을 측정합니다. Adobe Commerce/GA4 Enhanced Ecommerce의 핵심 지표입니다.", "주문 진입 수 / 상세 페이지 조회 수 × 100", "일간", "", ""], ["탐색", "스마트워치 및 태블릿 탐색", "", "", "", "", "", ""], ["탐색", "요금제 탐색", "요금제→가입 전환율", "요금제 상세 확인 후 실제 가입/변경으로 전환된 비율을 측정합니다.", "가입·변경 수 / 상세 조회 수 × 100", "월간", "", ""], ["탐색", "예상 금액 탐색", "시뮬레이션→주문 전환율", "예상 금액 시뮬레이션 완료 후 주문으로 진입한 비율을 측정합니다.", "주문 진입 수 / 시뮬레이터 완료 수 × 100", "월간", "", ""], ["탐색", "인터넷/B tv 탐색", "유선 상품 탐색→주문 전환율", "인터넷/B tv 상품 탐색 후 주문으로 전환된 비율을 측정합니다.", "주문 진입 수 / 유선 상품 조회 수 × 100", "월간", "", ""], ["탐색", "부가서비스 탐색", "부가서비스→가입 전환율", "부가서비스 상세 확인 후 가입으로 전환된 비율을 측정합니다.", "가입 수 / 상세 조회 수 × 100", "월간", "", ""], ["탐색", "T우주 구독 탐색", "T우주 상세→담기 전환율 (Add-to-Cart Rate)", "상품 상세 조회 후 장바구니 담기로 전환된 비율을 측정합니다. Adobe Commerce의 핵심 퍼널 지표입니다.", "담기 수 / 상세 조회 수 × 100", "일간", "", ""], ["탐색", "멤버십/혜택 탐색", "", "", "", "", "", ""], ["탐색", "로밍 서비스 탐색", "로밍→가입 전환율", "로밍 상품 조회 후 가입으로 전환된 비율을 측정합니다.", "가입 수 / 상품 조회 수 × 100", "월간", "", ""], ["탐색", "이용 안내/FAQ 탐색", "FAQ 자기해결률 (Case Deflection Rate)", "FAQ 조회 후 추가 CS 연결 없이 해결된 비율을 측정합니다. Salesforce Knowledge의 Case Deflection Rate에 해당합니다.", "(FAQ 조회 - CS 연결) / FAQ 조회 × 100", "월간", "", ""], ["탐색", "상담을 통한 탐색", "상담 후 전환율", "상담을 통해 탐색한 후 실제 가입/주문으로 전환된 비율을 측정합니다.", "전환 수 / 상담 탐색 건 × 100", "월간", "", ""], ["탐색", "개인화 추천", "개인화 추천 CTR", "개인화 추천 영역에서 클릭이 발생한 비율을 측정합니다. Salesforce Einstein/Adobe Target의 추천 효과 핵심 지표입니다.", "추천 클릭 수 / 추천 노출 수 × 100", "일간", "", ""], ["탐색", "외부 채널 탐색", "", "", "", "", "", ""], ["구매/가입/개통", "", "주문 전환율 (Order Conversion Rate)", "전체 방문 세션 대비 주문/가입이 완료된 비율을 측정합니다. GA4/Adobe Analytics의 Ecommerce Conversion Rate에 해당합니다.", "주문 완료 수 / 전체 세션 수 × 100", "일간", "", ""], ["구매/가입/개통", "", "장바구니 이탈률 (Cart Abandonment Rate)", "장바구니에 상품을 담았지만 결제를 완료하지 않은 비율을 측정합니다. Adobe Commerce/Salesforce Commerce Cloud의 핵심 지표입니다.", "(담기 수 - 결제 완료 수) / 담기 수 × 100", "일간", "", ""], ["구매/가입/개통", "", "평균주문금액 (AOV)", "주문 건당 평균 결제 금액을 측정합니다. 모든 커머스 플랫폼의 기본 매출 지표입니다.", "총 주문 금액 / 주문 건수", "월간", "", ""], ["구매/가입/개통", "휴대폰 및 스마트 기기 주문", "주문서 진입률", "상품 상세 페이지 방문 후 주문서로 진입한 비율을 측정합니다. Checkout Initiation Rate에 해당합니다.", "주문서 진입 수 / 상세 방문 수 × 100", "일간", "", ""], ["구매/가입/개통", "휴대폰 및 스마트 기기 주문", "결제 성공률 (Payment Success Rate)", "결제를 시도한 건 중 성공한 비율을 측정합니다. PG사/Salesforce Commerce Cloud의 결제 안정성 핵심 지표입니다.", "결제 성공 수 / 결제 시도 수 × 100", "일간", "", ""], ["구매/가입/개통", "USIM/eSIM 개통", "셀프개통 성공률", "셀프개통 요청 건 중 성공적으로 완료된 비율을 측정합니다.", "개통 완료 수 / 개통 요청 수 × 100", "일간", "", ""], ["구매/가입/개통", "USIM/eSIM 개통", "셀프개통 비율", "전체 개통 중 셀프개통이 차지하는 비율을 측정합니다. 디지털 전환 효율 지표입니다.", "셀프개통 수 / 전체 개통 수 × 100", "월간", "", ""], ["구매/가입/개통", "인터넷/B tv 주문 및 개통", "유선 주문 완료율", "유선 주문서 진입 후 주문을 완료한 비율을 측정합니다. Checkout Completion Rate에 해당합니다.", "주문 완료 수 / 주문서 진입 수 × 100", "일간", "", ""], ["구매/가입/개통", "결합 상품 가입", "결합 가입 전환율", "결합 상품 탐색 후 실제 가입으로 전환된 비율을 측정합니다.", "결합 가입 수 / 결합 탐색 수 × 100", "월간", "", ""], ["구매/가입/개통", "로밍 서비스 가입", "로밍 가입 완료율", "로밍 가입 프로세스를 시작한 고객 중 완료한 비율을 측정합니다.", "가입 완료 수 / 가입 시작 수 × 100", "일간", "", ""], ["구매/가입/개통", "부가서비스 가입", "부가서비스 가입 전환율", "부가서비스 탐색 후 실제 가입으로 전환된 비율을 측정합니다.", "가입 수 / 탐색 수 × 100", "월간", "", ""], ["구매/가입/개통", "T우주 구독 가입", "카트→결제 전환율 (Cart-to-Purchase Rate)", "장바구니 진입 후 결제를 완료한 비율을 측정합니다. 커머스 핵심 퍼널 지표입니다.", "결제 완료 수 / 카트 진입 수 × 100", "일간", "", ""], ["구매/가입/개통", "T우주 구독 가입", "구독 ARPU", "구독자 1인당 평균 매출을 측정합니다. Subscription Revenue Per User로 구독 비즈니스의 핵심 매출 지표입니다.", "구독 총 매출 / 구독자 수", "월간", "", ""], ["구매/가입/개통", "액세서리 주문", "액세서리 주문 전환율", "액세서리 상세 방문 후 주문으로 전환된 비율을 측정합니다.", "주문 수 / 상세 방문 수 × 100", "일간", "", ""], ["구매/가입/개통", "[대리점/고객센터] 구매/개통", "오프라인 구매/개통 완료율", "대리점/고객센터에서 구매·개통을 시작한 건 중 완료한 비율을 측정합니다.", "완료 수 / 시작 수 × 100", "월간", "", ""], ["서비스 이용", "", "고객 만족도 (CSAT)", "서비스 이용 후 만족으로 응답한 비율을 측정합니다. Salesforce Service Cloud/Adobe Experience Platform의 CX 핵심 지표입니다.", "만족 응답 / 전체 응답 × 100", "월간", "", ""], ["서비스 이용", "", "NPS (순추천지수)", "추천 의향 고객 비율에서 비추천 고객 비율을 뺀 지수를 측정합니다. Qualtrics/Medallia/Salesforce의 고객 충성도 대표 지표입니다.", "추천(9-10)% - 비추천(0-6)%", "분기", "", ""], ["서비스 이용", "", "디지털 채널 이용률", "전체 서비스 이용 중 디지털 채널(앱/웹)을 통한 비율을 측정합니다. 디지털 전환 성과 지표입니다.", "디지털 채널 이용 수 / 전체 이용 수 × 100", "월간", "", ""], ["서비스 이용", "요금/납부 관리", "요금 납부 적시율", "납부 기한 내 납부한 건의 비율을 측정합니다. 빌링 건전성의 핵심 지표입니다.", "기한내 납부 건 / 전체 청구 건 × 100", "월간", "", ""], ["서비스 이용", "요금/납부 관리", "미납률", "전체 청구 대비 미납된 비율을 측정합니다.", "미납 건수 / 전체 청구 건 × 100", "월간", "", ""], ["서비스 이용", "데이터/통화 관리", "", "", "", "", "", ""], ["서비스 이용", "나의 가입정보 관리", "", "", "", "", "", ""], ["서비스 이용", "구독 이용/관리", "구독 해지율 (Churn Rate)", "전월말 구독자 대비 당월 해지한 비율을 측정합니다. 모든 구독 비즈니스의 핵심 리텐션 지표입니다.", "월 해지 수 / 전월말 구독자 수 × 100", "월간", "", ""], ["서비스 이용", "혜택 이용 및 관리 (멤버십)", "포인트 사용률 (Redemption Rate)", "적립된 포인트 중 실제 사용된 비율을 측정합니다. 로열티 프로그램의 활성도를 나타내는 핵심 지표입니다.", "사용 포인트 / 적립 포인트 × 100", "월간", "", ""], ["서비스 이용", "혜택 이용 및 관리 (멤버십)", "쿠폰 사용률", "다운로드된 쿠폰 중 실제 사용된 비율을 측정합니다. Salesforce Marketing Cloud의 Offer Redemption Rate에 해당합니다.", "쿠폰 사용 수 / 다운로드 수 × 100", "월간", "", ""], ["서비스 이용", "로밍 서비스 이용 및 관리", "", "", "", "", "", ""], ["서비스 이용", "보안/분실 관리", "유심보호 가입률", "전체 가입자 중 유심보호 서비스에 가입한 비율을 측정합니다.", "유심보호 가입 수 / 전체 가입자 수 × 100", "월간", "", ""], ["서비스 이용", "고객 지원/CS", "FAQ 자기해결률 (Case Deflection Rate)", "FAQ 조회 후 추가 CS 연결 없이 해결된 비율을 측정합니다. Salesforce Knowledge/Service Cloud의 핵심 셀프서비스 지표입니다.", "CS 미연결 수 / FAQ 조회 수 × 100", "월간", "", ""], ["서비스 이용", "쇼핑 관리", "", "", "", "", "", ""], ["유지 및 확장", "", "고객 생애가치 (CLV / LTV)", "고객 1인이 전체 거래 기간 동안 창출하는 예상 총 매출을 측정합니다. Salesforce CDP/Adobe Real-Time CDP의 핵심 세그먼트 지표입니다.", "평균 월 매출 × 평균 유지 개월 수", "분기", "", ""], ["유지 및 확장", "", "업셀·크로스셀 전환율", "기존 고객에게 상위 상품 또는 추가 상품을 제안하여 전환된 비율을 측정합니다. Salesforce Sales Cloud의 Opportunity Win Rate에 해당합니다.", "전환 수 / 제안 수 × 100", "월간", "", ""], ["유지 및 확장", "", "ARPU 증가율", "고객 1인당 평균 매출의 전월 대비 증가율을 측정합니다.", "(당월 ARPU - 전월 ARPU) / 전월 ARPU × 100", "월간", "", ""], ["유지 및 확장", "기기변경", "기기변경 완료율", "기기변경 프로세스 진입 후 완료한 비율을 측정합니다.", "완료 수 / 진입 수 × 100", "월간", "", ""], ["유지 및 확장", "기기변경", "기기변경 ARPU 변화", "기기 변경 전후의 ARPU 변화를 측정합니다. 업셀 효과를 나타냅니다.", "변경 후 ARPU - 변경 전 ARPU", "월간", "", ""], ["유지 및 확장", "USIM/eSIM 개통/추가", "추가 회선 개통률", "추가 회선 개통을 시도한 건 중 완료한 비율을 측정합니다.", "개통 완료 수 / 개통 시도 수 × 100", "월간", "", ""], ["유지 및 확장", "인터넷/B tv 확장", "유선 업그레이드 전환율", "유선 상품 업그레이드를 제안받은 고객 중 전환된 비율을 측정합니다.", "업그레이드 수 / 제안 수 × 100", "월간", "", ""], ["유지 및 확장", "구독 확장/추가", "추가구독 전환율", "기존 구독자 중 추가 구독을 한 비율을 측정합니다. Cross-sell Conversion Rate에 해당합니다.", "추가 구독 수 / 기존 구독자 수 × 100", "월간", "", ""], ["유지 및 확장", "가족결합 신청/관리", "가족결합 유지율", "가족결합 가입 후 유지되고 있는 비율을 측정합니다. 결합 상품의 Lock-in 효과 지표입니다.", "유지 건 / 전체 가족결합 건 × 100", "월간", "", ""], ["유지 및 확장", "[대리점/고객센터] 변경 관리", "오프라인→디지털 전환율", "오프라인 방문 고객을 디지털 채널로 전환시킨 비율을 측정합니다.", "디지털 전환 수 / 오프라인 방문 수 × 100", "월간", "", ""], ["이탈", "", "월간 해지율 (Monthly Churn Rate)", "전월말 전체 가입자 대비 당월 해지된 비율을 측정합니다. 통신사/구독 비즈니스의 가장 중요한 이탈 지표입니다.", "당월 해지 수 / 전월말 가입자 수 × 100", "월간", "", ""], ["이탈", "", "리텐션율 (Retention Rate)", "특정 기간 시작 시점 고객 중 기간 종료까지 유지된 비율을 측정합니다. Salesforce CDP의 핵심 코호트 분석 지표입니다.", "기간말 유지 고객 수 / 기간초 고객 수 × 100", "월간", "", ""], ["이탈", "", "해지 방어 성공률 (Save Rate)", "해지를 시도한 고객 중 리텐션 활동으로 해지를 철회한 비율을 측정합니다. 통신사 리텐션팀의 핵심 KPI입니다.", "해지 철회 수 / 해지 시도 수 × 100", "월간", "", ""], ["이탈", "회선 해지", "회선 해지율", "전체 회선 대비 해지된 회선 비율을 측정합니다.", "해지 회선 수 / 전체 회선 수 × 100", "월간", "", ""], ["이탈", "회선 해지", "해지 사유 분석", "해지 사유별(요금 불만/서비스 불만/타사 전환 등) 비율을 분석합니다. VOC 기반 Root Cause 분석 지표입니다.", "사유별 해지 수 / 전체 해지 × 100", "월간", "", ""], ["이탈", "T우주 구독 해지", "구독 해지율 (Monthly)", "전월말 구독자 대비 당월 해지 비율을 측정합니다.", "월 해지 수 / 전월말 구독자 수 × 100", "월간", "", ""], ["이탈", "T우주 구독 해지", "리텐션 제안 수락률", "해지 시도 시 리텐션 제안(할인/업그레이드 등)을 수락한 비율을 측정합니다.", "제안 수락 수 / 해지 시도 수 × 100", "월간", "", ""], ["이탈", "T우주 구독 해지", "해지후 재가입률 (Win-back Rate)", "해지 후 30일 이내에 재가입한 비율을 측정합니다. Salesforce의 Win-back Campaign 효과 지표입니다.", "30일내 재가입 수 / 해지 수 × 100", "월간", "", ""], ["이탈", "부가서비스 해지", "해지 신청율", "전체 부가서비스 가입 대비 해지 신청 비율을 측정합니다.", "해지 신청 수 / 전체 가입 수 × 100", "월간", "", ""], ["이탈", "회원 탈퇴", "탈퇴 신청률", "전체 회원 대비 탈퇴를 신청한 비율을 측정합니다.", "탈퇴 신청 수 / 전체 회원 수 × 100", "월간", "", ""], ["이탈", "인터넷/유선 해지", "유선 해지율", "전체 유선 가입 대비 해지된 비율을 측정합니다.", "유선 해지 수 / 전체 유선 가입 × 100", "월간", "", ""]];
+const L1C={'인입':'#2563EB','탐색':'#7C3AED','주문':'#DB2777','구매/가입/개통':'#DB2777','개통':'#D97706','서비스이용':'#059669','서비스 이용':'#059669','확장':'#0891B2','유지 및 확장':'#0891B2','이탈':'#DC2626'};
+const L1O=['인입','탐색','구매/가입/개통','서비스 이용','유지 및 확장','이탈'];
+let D={},L1K={};
+
+function proc(rows){
+  D={};L1K={};
+  // Detect L1 values from data
+  const l1Set=new Set();
+  rows.forEach(r=>{if(r[0])l1Set.add(r[0]);});
+  // Update L1O if needed
+  if(l1Set.size>0 && !L1O.includes([...l1Set][0])){
+    L1O.length=0;l1Set.forEach(v=>L1O.push(v));
+  }
+  rows.forEach(r=>{
+    const[l1,l2,k,desc,formula,cy]=r;
+    if(!l1)return;
+    if(!L1O.includes(l1)){L1O.push(l1);}
+    if(!l2&&k){if(!L1K[l1])L1K[l1]=[];L1K[l1].push({k,desc:desc||'',formula:formula||'',cy:cy||'',w:r[6]||'',h:r[7]||''});return;}
+    if(!l2)return;
+    if(!D[l1])D[l1]={};if(!D[l1][l2])D[l1][l2]=[];
+    if(k)D[l1][l2].push({k,desc:desc||'',formula:formula||'',cy:cy||'',w:r[6]||'',h:r[7]||''});
+  });
+  um();
+}
+function toR(){
+  const r=[];
+  L1O.forEach(l1=>{
+    if(L1K[l1])L1K[l1].forEach(m=>r.push([l1,'',m.k,m.desc,m.formula,m.cy,m.w,m.h]));
+    if(!D[l1])return;
+    Object.entries(D[l1]).forEach(([l2,ks])=>{
+      if(!ks.length)r.push([l1,l2,'','','','','','']);
+      ks.forEach(m=>r.push([l1,l2,m.k,m.desc,m.formula,m.cy,m.w,m.h]));
+    });
+  });
+  return r;
+}
+function um(){
+  const tl2=Object.values(D).reduce((a,v)=>a+Object.keys(v).length,0);
+  const tm=Object.values(D).reduce((a,v)=>a+Object.values(v).reduce((b,w)=>b+w.length,0),0)+Object.values(L1K).reduce((a,v)=>a+v.length,0);
+  document.getElementById('meta').textContent=L1O.length+' L1 · '+tl2+' L2 · '+tm+' KPIs';
+}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+const svgC='<svg class="l2-chv" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>';
+
+function kt(items,l1,l2,lv){
+  let h='<table class="kt"><thead><tr><th style="width:18%">KPI 지표명</th><th style="width:30%">KPI 설명</th><th>산식/정의</th><th style="width:44px">주기</th><th style="width:90px"></th></tr></thead><tbody>';
+  items.forEach((m,i)=>{
+    h+='<tr><td class="kpi-name">'+esc(m.k)+'</td><td class="kpi-desc">'+esc(m.desc)+'</td><td class="kpi-formula">'+esc(m.formula)+'</td><td><span class="tc tc-'+m.cy+'">'+m.cy+'</span></td><td><div class="act-btns"><button class="act-btn" onclick="event.stopPropagation();oe(\''+esc(l1)+'\',\''+esc(l2)+'\','+i+',\''+lv+'\')">수정</button><button class="act-btn del" onclick="event.stopPropagation();od(\''+esc(l1)+'\',\''+esc(l2)+'\','+i+',\''+lv+'\')">삭제</button></div></td></tr>';
+  });
+  h+='</tbody></table><div class="add-row" onclick="event.stopPropagation();oa(\''+esc(l1)+'\',\''+esc(l2)+'\',\''+lv+'\')"><span class="tag tag-'+lv+'">'+lv.toUpperCase()+'</span> KPI 추가</div>';
+  return h;
+}
+
+function render(){
+  let h='<div class="ctrls-bar"><button class="ctrl-btn" onclick="tog(1)">모두 펼치기</button><button class="ctrl-btn" onclick="tog(0)">모두 접기</button></div>';
+  L1O.forEach(l1=>{
+    const co=L1C[l1]||'#666',l2s=D[l1]||{},l1k=L1K[l1]||[];
+    h+='<div class="l1-sec"><div class="l1-bar"><div class="l1-dot" style="background:'+co+'"></div><div class="l1-name"><span class="tag tag-l1">L1</span>'+esc(l1)+'</div></div>';
+    if(l1k.length) h+='<div class="l1-kpis">'+kt(l1k,l1,'','l1')+'</div>';
+    else h+='<div class="l1-kpis">'+kt([],l1,'','l1')+'</div>';
+    h+='<div class="l2-list">';
+    Object.entries(l2s).forEach(([l2,ks])=>{
+      h+='<div class="l2-card"><div class="l2-hdr" onclick="this.parentElement.classList.toggle(\'open\')">'+svgC+'<div class="l2-nm"><span class="tag tag-l2">L2</span>'+esc(l2)+'</div><span class="l2-badge">'+ks.length+'</span></div><div class="l2-body">'+kt(ks,l1,l2,'l2')+'</div></div>';
+    });
+    h+='<div class="add-l2-wrap"><div class="tooltip">희망하는 KPI를 지정할 L2 액티비티가 없을 경우,<br>액티비티를 추가하면서 KPI를 입력하세요.</div><div class="add-l2" onclick="oal2(\''+esc(l1)+'\')"><span class="tag tag-l2">L2</span> 액티비티 추가 <span style="color:var(--tx4);font-size:11px">ⓘ</span></div></div>';
+    h+='</div></div>';
+  });
+  document.getElementById('main').innerHTML=h;
+}
+
+// Modal
+function tog(o){document.querySelectorAll('.l2-card').forEach(c=>{o?c.classList.add('open'):c.classList.remove('open')});}
+function cm(){document.getElementById('mbg').classList.remove('show');}
+
+function oa(l1,l2,lv){
+  const tgt=lv==='l1'?'<span class="tag tag-l1">L1</span> '+esc(l1):'<span class="tag tag-l1">L1</span> '+esc(l1)+' → <span class="tag tag-l2">L2</span> '+esc(l2);
+  document.getElementById('mdl').innerHTML='<h3>KPI 추가</h3><div class="msub">'+tgt+'</div><label>KPI 지표명 *</label><input id="mk" placeholder="예: 앱 설치 전환율"><label>KPI 설명</label><textarea id="md" placeholder="지표에 대한 설명"></textarea><label>산식/정의 (예시)</label><textarea id="mf" placeholder="예: 전환 수 / 전체 유입 수 × 100"></textarea><label>측정주기</label><select id="mc"><option>일간</option><option selected>월간</option><option>분기</option></select><label>이름 *</label><input id="mw" placeholder="이름"><div class="mbtns"><button class="cc" onclick="cm()">취소</button><button class="ok" onclick="da(\''+esc(l1)+'\',\''+esc(l2)+'\',\''+lv+'\')">추가</button></div>';
+  document.getElementById('mbg').classList.add('show');setTimeout(()=>document.getElementById('mk').focus(),80);
+}
+function da(l1,l2,lv){
+  const k=document.getElementById('mk').value.trim(),desc=document.getElementById('md').value.trim(),formula=document.getElementById('mf').value.trim(),cy=document.getElementById('mc').value,w=document.getElementById('mw').value.trim();
+  if(!k||!w){alert('지표명과 이름을 입력해주세요.');return;}
+  const h=lv.toUpperCase()+' KPI 추가';
+  if(lv==='l1'){if(!L1K[l1])L1K[l1]=[];L1K[l1].push({k,desc,formula,cy,w,h});}
+  else{if(!D[l1])D[l1]={};if(!D[l1][l2])D[l1][l2]=[];D[l1][l2].push({k,desc,formula,cy,w,h});}
+  cm();um();render();sync();
+}
+
+function oe(l1,l2,i,lv){
+  const m=lv==='l1'?L1K[l1][i]:D[l1][l2][i];
+  const tgt=lv==='l1'?'<span class="tag tag-l1">L1</span> '+esc(l1):'<span class="tag tag-l1">L1</span> '+esc(l1)+' → <span class="tag tag-l2">L2</span> '+esc(l2);
+  document.getElementById('mdl').innerHTML='<h3>KPI 수정</h3><div class="msub">'+tgt+'</div><label>KPI 지표명</label><input id="mk" value="'+esc(m.k)+'"><label>KPI 설명</label><textarea id="md">'+esc(m.desc)+'</textarea><label>산식/정의 (예시)</label><textarea id="mf">'+esc(m.formula)+'</textarea><label>측정주기</label><select id="mc"><option'+(m.cy==='일간'?' selected':'')+'>일간</option><option'+(m.cy==='월간'?' selected':'')+'>월간</option><option'+(m.cy==='분기'?' selected':'')+'>분기</option><option'+(m.cy==='일간/월간'?' selected':'')+'>일간/월간</option></select><label>이름 *</label><input id="mw" placeholder="이름" value="'+esc(m.w)+'"><div class="mbtns"><button class="cc" onclick="cm()">취소</button><button class="ok" onclick="ce(\''+esc(l1)+'\',\''+esc(l2)+'\','+i+',\''+lv+'\')">수정 확인</button></div>';
+  document.getElementById('mbg').classList.add('show');
+}
+function ce(l1,l2,i,lv){
+  const k=document.getElementById('mk').value.trim(),desc=document.getElementById('md').value.trim(),formula=document.getElementById('mf').value.trim(),cy=document.getElementById('mc').value,w=document.getElementById('mw').value.trim();
+  if(!k||!w){alert('지표명과 이름을 입력해주세요.');return;}
+  document.getElementById('mdl').innerHTML='<h3>수정 확인</h3><p style="font-size:11px;color:var(--tx3)">아래 내용으로 수정하시겠습니까?</p><div class="cbox"><div class="ck">'+esc(k)+'</div><div class="cd">'+esc(desc)+'</div><div class="cd" style="font-family:monospace;font-size:10px;color:var(--tx3)">'+esc(formula)+'</div><div class="cd"><span class="tc tc-'+cy+'" style="display:inline-block">'+cy+'</span></div></div><div class="mbtns"><button class="cc" onclick="oe(\''+esc(l1)+'\',\''+esc(l2)+'\','+i+',\''+lv+'\')">← 돌아가기</button><button class="ok" onclick="de(\''+esc(l1)+'\',\''+esc(l2)+'\','+i+',\''+lv+'\')">확인</button></div>';
+  window._et={k,desc,formula,cy,w};
+}
+function de(l1,l2,i,lv){
+  const{k,desc,formula,cy,w}=window._et;
+  const h=lv.toUpperCase()+' KPI 수정';
+  if(lv==='l1')L1K[l1][i]={k,desc,formula,cy,w,h};else D[l1][l2][i]={k,desc,formula,cy,w,h};
+  cm();um();render();sync();
+}
+
+function od(l1,l2,i,lv){
+  const m=lv==='l1'?L1K[l1][i]:D[l1][l2][i];
+  const tgt=lv==='l1'?esc(l1):esc(l1)+' → '+esc(l2);
+  document.getElementById('mdl').innerHTML='<h3>KPI 삭제</h3><p style="font-size:11px;color:var(--tx3)">아래 KPI를 삭제하시겠습니까?</p><div class="cbox"><div class="ck">'+esc(m.k)+'</div><div class="cd">'+esc(m.desc)+'</div><div class="cd" style="color:var(--tx3)">'+tgt+'</div></div><label>이름 *</label><input id="mw" placeholder="이름"><div class="mbtns"><button class="cc" onclick="cm()">취소</button><button class="danger" onclick="dd(\''+esc(l1)+'\',\''+esc(l2)+'\','+i+',\''+lv+'\')">삭제</button></div>';
+  document.getElementById('mbg').classList.add('show');
+}
+function dd(l1,l2,i,lv){
+  const w=document.getElementById('mw').value.trim();
+  if(!w){alert('이름을 입력해주세요.');return;}
+  if(lv==='l1'){L1K[l1].splice(i,1);if(!L1K[l1].length)delete L1K[l1];}
+  else{D[l1][l2].splice(i,1);if(!D[l1][l2].length)delete D[l1][l2];if(D[l1]&&!Object.keys(D[l1]).length)delete D[l1];}
+  cm();um();render();sync();
+}
+
+function oal2(l1){
+  document.getElementById('mdl').innerHTML='<h3>L2 액티비티 추가</h3><div class="msub"><span class="tag tag-l1">L1</span> '+esc(l1)+'</div><label>L2 액티비티명 *</label><input id="ml2" placeholder="예: 로밍 서비스 이용"><label>첫 번째 KPI 지표명 *</label><input id="mk" placeholder="예: 로밍 데이터 사용량"><label>KPI 설명</label><textarea id="md" placeholder="지표 설명"></textarea><label>산식/정의 (예시)</label><textarea id="mf" placeholder="예: 사용량 / 전체 × 100"></textarea><label>측정주기</label><select id="mc"><option>일간</option><option selected>월간</option><option>분기</option></select><label>이름 *</label><input id="mw" placeholder="이름"><div class="mbtns"><button class="cc" onclick="cm()">취소</button><button class="ok" onclick="dal2(\''+esc(l1)+'\')">추가</button></div>';
+  document.getElementById('mbg').classList.add('show');setTimeout(()=>document.getElementById('ml2').focus(),80);
+}
+function dal2(l1){
+  const l2=document.getElementById('ml2').value.trim(),k=document.getElementById('mk').value.trim(),desc=document.getElementById('md').value.trim(),formula=document.getElementById('mf').value.trim(),cy=document.getElementById('mc').value,w=document.getElementById('mw').value.trim();
+  if(!l2||!k||!w){alert('L2명, KPI 지표명, 이름을 입력해주세요.');return;}
+  if(!D[l1])D[l1]={};if(D[l1][l2]){alert('이미 존재하는 L2입니다.');return;}
+  const h='L2 액티비티 및 KPI 추가';
+  D[l1][l2]=[{k,desc,formula,cy,w,h}];cm();um();render();sync();
+}
+
+function sync(){
+  try{
+    const form=document.createElement('form');form.method='POST';form.action=API;form.target='_sf';form.style.display='none';
+    const input=document.createElement('input');input.type='hidden';input.name='data';input.value=JSON.stringify({action:'sync',data:toR()});
+    form.appendChild(input);document.body.appendChild(form);form.submit();form.remove();
+    toast('시트에 저장되었습니다');
+  }catch(e){toast('저장 요청을 보냈습니다');}
+}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show ok';setTimeout(()=>t.className='toast',2500);}
+
+proc(E);render();
+</script>
+</body>
+</html>
