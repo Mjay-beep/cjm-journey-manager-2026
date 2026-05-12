@@ -116,7 +116,7 @@ body{font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;background:var(--
 </div>
 <div class="main" id="main"><div class="loading"><div class="spinner"></div>시트에서 데이터를 불러오는 중...</div></div>
 <div class="ft"><span>관련 문의: Next플랫폼CX팀 박민재 매니저</span></div>
-<div class="mbg" id="mbg" onclick="if(event.target===this)cm()"><div class="modal" id="mdl"></div></div>
+<div class="mbg" id="mbg" onmousedown="if(event.target===this){this._mdStart=true;}else{this._mdStart=false;}" onmouseup="if(event.target===this&&this._mdStart)cm();this._mdStart=false;"><div class="modal" id="mdl"></div></div>
 <div class="toast" id="toast"></div>
 
 <script>
