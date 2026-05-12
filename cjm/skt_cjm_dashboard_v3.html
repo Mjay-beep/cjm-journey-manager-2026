@@ -6,7 +6,7 @@
 <title>SKT 고객여정 Manager</title>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css" rel="stylesheet">
 <style>
-:root{--bg:#F7F8FB;--card:#FFFFFF;--border:#E4E7ED;--text:#1A1D26;--text2:#5A5F6B;--text3:#9DA2AE;--pend-bg:#FFF9E6;--pend-bd:#F5C518;--pend-tx:#8B6914;--edit-dot:#F97316}
+:root{--bg:#F7F8FB;--card:#FFFFFF;--border:#E4E7ED;--text:#1A1D26;--text2:#5A5F6B;--text3:#9DA2AE;--pend-bg:#FFF9E6;--pend-bd:#F5C518;--pend-tx:#8B6914;--edit-dot:#F97316;--ch-bg:#F1F3F5;--ch-bd:#D9DEE5;--ch-tx:#4A5260}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Pretendard','Apple SD Gothic Neo',-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 
@@ -33,11 +33,6 @@ body{font-family:'Pretendard','Apple SD Gothic Neo',-apple-system,sans-serif;bac
 .expand-group .ebtn:last-child{border-right:none}
 .expand-group .ebtn:hover{background:#242D44;color:#fff}
 .expand-group .ebtn.active{background:#3B82F6;color:#fff}
-
-.flow-bar{display:flex;align-items:center;gap:3px;padding:14px 28px 6px;overflow-x:auto}
-.flow-pill{padding:5px 13px;border-radius:18px;color:#fff;font-size:10.5px;font-weight:700;white-space:nowrap;cursor:pointer;transition:transform .12s,box-shadow .12s}
-.flow-pill:hover{transform:scale(1.06);box-shadow:0 2px 12px rgba(0,0,0,.15)}
-.flow-arrow{color:#C8CDD9;font-size:14px;flex-shrink:0;padding:0 1px}
 
 .journey-wrap{padding:10px 20px 30px;overflow-x:auto}
 .l1-grid{display:flex;gap:10px;align-items:flex-start}
@@ -79,9 +74,27 @@ body{font-family:'Pretendard','Apple SD Gothic Neo',-apple-system,sans-serif;bac
 .l4-row{display:flex;align-items:center;gap:6px;padding:3px 0 3px 10px;font-size:11.5px;color:var(--text2);border-left:2px solid;position:relative}
 .l4-code{font-size:9.5px;font-family:'SF Mono','Courier New',monospace;min-width:110px;opacity:.6;flex-shrink:0}
 .l4-name{flex:1;min-width:0}
-.src-tag{font-size:8.5px;padding:1px 5px;border-radius:3px;font-weight:500;white-space:nowrap;flex-shrink:0}
 .l4-edit-btn{width:20px;height:20px;border-radius:4px;border:1px solid var(--border);background:var(--card);cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .12s;flex-shrink:0}
 .l4-row:hover .l4-edit-btn{opacity:1}
+
+/* ── 채널 뱃지 (그레이 통일) ── */
+.ch-list{display:inline-flex;gap:3px;flex-shrink:0;flex-wrap:wrap}
+.ch-tag{font-size:9px;padding:1px 6px;border-radius:3px;font-weight:600;white-space:nowrap;background:var(--ch-bg);color:var(--ch-tx);border:1px solid var(--ch-bd);line-height:1.4}
+.ch-tag.empty{opacity:.45;font-style:italic}
+
+/* ── 채널 필터 바 (헤더 하단, 우측 정렬) ── */
+.filter-bar{display:flex;align-items:center;gap:8px;padding:10px 28px 4px;flex-wrap:wrap;background:var(--bg)}
+.filter-spacer{flex:1}
+.filter-label{font-size:10.5px;color:var(--text3);font-weight:600;letter-spacing:.2px;white-space:nowrap}
+.filter-chips{display:flex;gap:5px;flex-wrap:wrap}
+.filter-chip{padding:4px 11px;border-radius:14px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--ch-bd);background:#fff;color:var(--ch-tx);transition:all .12s;user-select:none;font-family:inherit}
+.filter-chip:hover{background:#EEF1F5;border-color:#B5BCC8}
+.filter-chip.active{background:#1A1D26;color:#fff;border-color:#1A1D26}
+.filter-chip.active:hover{background:#2A2D36}
+.filter-meta{font-size:10px;color:var(--text3)}
+.filter-clear{font-size:10.5px;padding:3px 9px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-family:inherit;white-space:nowrap}
+.filter-clear:hover{border-color:#3B82F6;color:#3B82F6}
+.filter-clear:disabled{opacity:.3;cursor:default}
 
 .l4-row.pending{background:var(--pend-bg);border-left-color:var(--pend-bd)!important;border-radius:4px;margin:2px 0}
 .l4-row.pending .l4-name{color:var(--pend-tx);font-weight:600}
@@ -152,7 +165,14 @@ body{font-family:'Pretendard','Apple SD Gothic Neo',-apple-system,sans-serif;bac
   </div>
 </div></div>
 
-<div class="flow-bar" id="flowBar"></div>
+<div class="filter-bar" id="filterBar">
+  <span class="filter-meta" id="filterMeta"></span>
+  <div class="filter-spacer"></div>
+  <div class="filter-label">📍 채널 필터</div>
+  <div class="filter-chips" id="filterChips"></div>
+  <button class="filter-clear" id="filterClear" onclick="clearFilters()" disabled>전체 해제</button>
+</div>
+
 <div class="journey-wrap"><div class="l1-grid" id="l1Grid">
   <div class="loading-screen"><div class="spinner"></div><div class="loading-text">구글시트에서 데이터를 불러오는 중...</div></div>
 </div></div>
@@ -219,11 +239,31 @@ body{font-family:'Pretendard','Apple SD Gothic Neo',-apple-system,sans-serif;bac
 <script>
 const API='https://script.google.com/macros/s/AKfycbwY-ZSmquMDmWaY39m_-CeTauo5ZXKrkyt8taQCsc-32bFj0YG_AjUEgwKz7mF01D2nEg/exec';
 const L1M={"인입":{i:"🚪",bg:"#EFF6FF",bd:"#3B82F6",ac:"#2563EB",tg:"#DBEAFE",tx:"#1E40AF"},"탐색":{i:"🔍",bg:"#F5F3FF",bd:"#8B5CF6",ac:"#7C3AED",tg:"#EDE9FE",tx:"#5B21B6"},"구매/가입/개통":{i:"🛒",bg:"#FDF2F8",bd:"#EC4899",ac:"#DB2777",tg:"#FCE7F3",tx:"#9D174D"},"서비스 이용":{i:"⚙️",bg:"#FFFBEB",bd:"#F59E0B",ac:"#D97706",tg:"#FEF3C7",tx:"#92400E"},"유지 및 확장":{i:"📈",bg:"#ECFDF5",bd:"#10B981",ac:"#059669",tg:"#D1FAE5",tx:"#065F46"},"이탈":{i:"🚶",bg:"#FEF2F2",bd:"#EF4444",ac:"#DC2626",tg:"#FEE2E2",tx:"#991B1B"}};
-const SC={"T4S IA data":{b:"#DBEAFE",t:"#1D4ED8"},"Web search":{b:"#FEF3C7",t:"#B45309"},"고객센터voc":{b:"#FCE7F3",t:"#BE185D"},"고객센터voc data":{b:"#FCE7F3",t:"#BE185D"}};
 
 let DATA=[],PENDING=[];
 const EX={l1:{},l2:{},l3:{}};
 let addCtx=null,editCtx=null;
+
+// ── Phase 3: 채널 필터 ──
+const FILTER_CHANNELS = ['T월드','T다이렉트','T멤버십','T우주','유통망','고객센터','AI'];
+const ALWAYS_SHOW = ['ALL','ALL(Digital)']; // 어떤 필터에도 항상 노출
+let activeFilters = new Set(); // 선택된 채널 (비어있으면 전체)
+let autoExpandPending = false; // 필터/검색 변경 직후 자동 펼침 트리거
+
+// ── 채널 유틸 ──
+function parseChannels(s){
+  if(!s)return[];
+  return String(s).split(',').map(x=>x.trim()).filter(x=>x.length>0);
+}
+function uniqChannels(arr){
+  const seen={},out=[];
+  arr.forEach(c=>{if(!seen[c]){seen[c]=1;out.push(c);}});
+  return out;
+}
+function renderChannels(chs){
+  if(!chs||chs.length===0)return'<span class="ch-tag empty">—</span>';
+  return'<span class="ch-list">'+chs.map(c=>'<span class="ch-tag">'+c+'</span>').join('')+'</span>';
+}
 
 async function loadData(){
   try{
@@ -238,16 +278,25 @@ async function loadData(){
     document.getElementById('l1Grid').innerHTML='<div class="loading-screen"><div style="font-size:32px">⚠️</div><div class="loading-text">데이터 로드 실패: '+e.message+'</div><button class="btn" onclick="loadData()" style="margin-top:8px;color:#333">다시 시도</button></div>';
   }
 }
+
 function parseH(rows){
   const res=[];let c1=null,c2=null,c3=null;
   for(const r of rows){
     if(r.l1&&isNaN(r.l1)){c1={name:r.l1,l2s:[]};res.push(c1);}
     if(!c1)continue;
-    if(r.l2Code){c2={code:r.l2Code,name:r.l2Name||r.l2Code,l3s:[]};c1.l2s.push(c2);}
+    if(r.l2Code){c2={code:r.l2Code,name:r.l2Name||r.l2Code,l3s:[],channels:[]};c1.l2s.push(c2);}
     if(!c2)continue;
-    if(r.l3Code||r.l3Name){c3={code:r.l3Code||'',name:r.l3Name||r.l3Code||'',l4s:[]};c2.l3s.push(c3);}
+    if(r.l3Code||r.l3Name){c3={code:r.l3Code||'',name:r.l3Name||r.l3Code||'',l4s:[],channels:[]};c2.l3s.push(c3);}
     if(!c3)continue;
-    if(r.l4Code||r.l4Name){c3.l4s.push({code:r.l4Code||'',name:r.l4Name||'',src:r.source||''});}
+    if(r.l4Code||r.l4Name){
+      const chs=parseChannels(r.channels);
+      c3.l4s.push({code:r.l4Code||'',name:r.l4Name||'',channels:chs});
+      // 채널 집계 (L3, L2로 상향 누적)
+      chs.forEach(ch=>{
+        if(c3.channels.indexOf(ch)===-1)c3.channels.push(ch);
+        if(c2.channels.indexOf(ch)===-1)c2.channels.push(ch);
+      });
+    }
   }
   return res;
 }
@@ -293,18 +342,17 @@ function rStats(){
   let a=0,b=0,c=0;DATA.forEach(l=>l.l2s.forEach(l2=>{a++;l2.l3s.forEach(l3=>{b++;c+=l3.l4s.length})}));
   document.getElementById("statPills").innerHTML=[["L1",DATA.length,"#3B82F6"],["L2",a,"#8B5CF6"],["L3",b,"#EC4899"],["L4",c,"#F59E0B"]].map(([l,v,co])=>'<div class="stat-pill" style="background:'+co+'22"><span style="color:'+co+';font-weight:700">'+l+'</span> <b>'+v+'</b></div>').join("");
 }
-function st(s){if(!s)return'';const c=SC[s]||{b:"#F3F4F6",t:"#374151"};return'<span class="src-tag" style="background:'+c.b+';color:'+c.t+'">'+s+'</span>';}
 function esc(s){return(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,' ');}
-function rFlow(d){document.getElementById("flowBar").innerHTML=d.map((l,i)=>{const m=L1M[l.name]||L1M["인입"];return'<span class="flow-pill" style="background:'+m.ac+'" onclick="oL1('+i+')">'+m.i+' '+l.name+'</span>'+(i<d.length-1?'<span class="flow-arrow">→</span>':'');}).join("");}
-function rPendCard(p){return'<div class="pend-card"><span class="pending-badge">검토 대기</span><span class="pend-label">'+p.reqType.replace('_',' ')+'</span><span class="pend-content">'+p.content+'</span><span class="src-tag" style="background:#FEF3C7;color:#92400E">'+p.requester+'</span><span style="font-size:9px;color:var(--text3)">'+p.reqId+'</span></div>';}
+function rFlow(d){const el=document.getElementById("flowBar");if(!el)return;el.innerHTML=d.map((l,i)=>{const m=L1M[l.name]||L1M["인입"];return'<span class="flow-pill" style="background:'+m.ac+'" onclick="oL1('+i+')">'+m.i+' '+l.name+'</span>'+(i<d.length-1?'<span class="flow-arrow">→</span>':'');}).join("");}
+function rPendCard(p){return'<div class="pend-card"><span class="pending-badge">검토 대기</span><span class="pend-label">'+p.reqType.replace('_',' ')+'</span><span class="pend-content">'+p.content+'</span><span class="ch-tag">'+p.requester+'</span><span style="font-size:9px;color:var(--text3)">'+p.reqId+'</span></div>';}
 
 function rL4(l4,c,l1n,l2c,l2n,l3c,l3n){
   const ed=l4.code?getEditReqs('L4',l4.code):[];
   const dot=ed.length?'<div class="edit-dot" title="편집 요청 '+ed.length+'건"></div>':'';
   const bd="'L4','"+[l1n,l2c,l2n,l3c,l3n,l4.code,l4.name].map(esc).join("','")+"'";
-  return'<div class="l4-row" style="border-left-color:'+c.bd+'22"><span class="l4-code" style="color:'+c.ac+'">'+(l4.code||'')+'</span><span class="l4-name">'+l4.name+'</span>'+dot+st(l4.src)+'<button class="l4-edit-btn" onclick="event.stopPropagation();oEM('+bd+')" title="편집 요청">✏️</button></div>';
+  return'<div class="l4-row" style="border-left-color:'+c.bd+'22"><span class="l4-code" style="color:'+c.ac+'">'+(l4.code||'')+'</span><span class="l4-name">'+l4.name+'</span>'+dot+renderChannels(l4.channels)+'<button class="l4-edit-btn" onclick="event.stopPropagation();oEM('+bd+')" title="편집 요청">✏️</button></div>';
 }
-function rPL4(p){return'<div class="l4-row pending" style="border-left-color:var(--pend-bd)"><span class="l4-code" style="color:var(--pend-tx)">'+p.reqId+'</span><span class="l4-name">'+p.content+'</span><span class="pending-badge">검토 대기</span><span class="src-tag" style="background:#FEF3C7;color:#92400E">'+p.requester+'</span></div>';}
+function rPL4(p){return'<div class="l4-row pending" style="border-left-color:var(--pend-bd)"><span class="l4-code" style="color:var(--pend-tx)">'+p.reqId+'</span><span class="l4-name">'+p.content+'</span><span class="pending-badge">검토 대기</span><span class="ch-tag">'+p.requester+'</span></div>';}
 
 function rL3(l3,c,k,l1n,l2c,l2n){
   const o=EX.l3[k]||false;
@@ -319,6 +367,7 @@ function rL3(l3,c,k,l1n,l2c,l2n){
     +'<span class="l3-code" style="color:'+c.ac+'">'+l3.code+'</span>'
     +'<span class="l3-name" style="color:'+c.tx+'">'+l3.name+'</span>'+dot
     +(l4a.length?'<span class="pending-badge">+'+l4a.length+'</span>':'')
+    +renderChannels(l3.channels)
     +'<span class="l3-count">'+tc+'</span>'
     +'<button class="l3-edit-btn" onclick="event.stopPropagation();oEM('+eBd+')" title="L3 편집 요청">✏️</button>'
     +'</div>'+(o?'<div class="l3-body">'
@@ -342,6 +391,7 @@ function rL2(l2,c,k,l1n){
     +'<span class="l2-code" style="background:'+c.tg+';color:'+c.ac+'">'+l2.code+'</span>'
     +'<span class="l2-name">'+l2.name+'</span>'+dot
     +(l3a.length?'<span class="pending-badge">+'+l3a.length+'</span>':'')
+    +renderChannels(l2.channels)
     +'<div class="l2-counts"><span>L3:'+l2.l3s.length+'</span><span>L4:'+t4+'</span></div>'
     +'<button class="l2-edit-btn" onclick="event.stopPropagation();oEM('+eL2+')" title="L2 편집 요청">✏️</button>'
     +'</div>'+(o?'<div class="l2-body">'
@@ -375,11 +425,102 @@ function rL1(l1,idx){
     +'</div>':'')+'</div>';
 }
 
+// ── Phase 3: 채널 필터 함수들 ──
+function renderFilterChips(){
+  const c=document.getElementById('filterChips');
+  c.innerHTML = FILTER_CHANNELS.map(ch=>{
+    const on = activeFilters.has(ch);
+    return '<button class="filter-chip'+(on?' active':'')+'" onclick="toggleFilter(\''+ch+'\')">'+ch+'</button>';
+  }).join('');
+  document.getElementById('filterClear').disabled = activeFilters.size===0;
+}
+function toggleFilter(ch){
+  if(activeFilters.has(ch)) activeFilters.delete(ch);
+  else activeFilters.add(ch);
+  autoExpandPending = true;
+  renderFilterChips();
+  render();
+}
+function clearFilters(){
+  activeFilters.clear();
+  autoExpandPending = true;
+  renderFilterChips();
+  render();
+}
+// 채널이 활성 필터에 매치되는지 (ALL/ALL(Digital)은 항상 통과)
+function matchesFilter(chs){
+  if(activeFilters.size===0) return true; // 필터 없으면 전체 표시
+  for(const c of (chs||[])){
+    if(ALWAYS_SHOW.indexOf(c)!==-1) return true; // ALL 류는 항상 통과
+    if(activeFilters.has(c)) return true;
+  }
+  return false;
+}
+
+// 검색어 매치 (코드/이름)
+function matchesSearch(item,q){
+  if(!q) return true;
+  return ((item.name||'').toLowerCase().includes(q) || (item.code||'').toLowerCase().includes(q));
+}
+
 function render(){
   const q=document.getElementById("searchInput").value.toLowerCase().trim();
-  let d=DATA;
-  if(q){d=DATA.map(l1=>{const l2s=l1.l2s.map(l2=>{const l3s=l2.l3s.map(l3=>{const l4s=l3.l4s.filter(l4=>(l4.name||'').toLowerCase().includes(q)||(l4.code||'').toLowerCase().includes(q));return{...l3,l4s};}).filter(l3=>l3.l4s.length>0||(l3.name||'').toLowerCase().includes(q)||(l3.code||'').toLowerCase().includes(q));return{...l2,l3s};}).filter(l2=>l2.l3s.length>0||(l2.name||'').toLowerCase().includes(q)||(l2.code||'').toLowerCase().includes(q));return{...l1,l2s};}).filter(l1=>l1.l2s.length>0);}
-  rFlow(d);document.getElementById("l1Grid").innerHTML=d.map((l1,i)=>rL1(l1,i)).join("");
+  const hasFilter = activeFilters.size>0;
+  const hasSearch = q.length>0;
+  
+  // 필터링: L4 단위에서 매치 판정 → 부모 자동 노출
+  let d = DATA.map((l1, origIdx)=>{
+    const l2s = l1.l2s.map((l2, origJ)=>{
+      const l3s = l2.l3s.map((l3, origK)=>{
+        const l4s = l3.l4s.filter(l4=>{
+          return matchesFilter(l4.channels) && matchesSearch(l4,q);
+        });
+        return {...l3, l4s, _origK:origK};
+      }).filter(l3=>{
+        if(l3.l4s.length>0) return true;
+        if(hasSearch && matchesSearch(l3,q) && (!hasFilter || matchesFilter(l3.channels))) return true;
+        return false;
+      });
+      return {...l2, l3s, _origJ:origJ};
+    }).filter(l2=>{
+      if(l2.l3s.length>0) return true;
+      if(hasSearch && matchesSearch(l2,q) && (!hasFilter || matchesFilter(l2.channels))) return true;
+      return false;
+    });
+    return {...l1, l2s, _origIdx:origIdx};
+  }).filter(l1=>l1.l2s.length>0);
+
+  // 자동 펼치기 (필터/검색 변경 직후 1회만 — 이후 사용자가 접을 수 있도록 보존)
+  if((hasFilter || hasSearch) && autoExpandPending){
+    d.forEach(l1=>{
+      const oi = l1._origIdx;
+      EX.l1[oi]=true;
+      l1.l2s.forEach(l2=>{
+        const oj = l2._origJ;
+        EX.l2[oi+'_'+oj]=true;
+        l2.l3s.forEach(l3=>{
+          const ok = l3._origK;
+          EX.l3[oi+'_'+oj+'_'+ok]=true;
+        });
+      });
+    });
+    clearEB();
+    autoExpandPending = false;
+  }
+
+  // 필터 메타 정보 (매치 카운트)
+  const meta=document.getElementById('filterMeta');
+  if(hasFilter||hasSearch){
+    let cnt=0; d.forEach(l1=>l1.l2s.forEach(l2=>l2.l3s.forEach(l3=>{cnt+=l3.l4s.length})));
+    meta.textContent='매치된 L4: '+cnt+'건';
+  }else{
+    meta.textContent='';
+  }
+
+  rFlow(d);
+  document.getElementById("l1Grid").innerHTML = d.length>0
+    ? d.map(l1=>rL1(l1, l1._origIdx)).join("")
+    : '<div class="loading-screen"><div style="font-size:32px">🔍</div><div class="loading-text">선택한 채널/검색어에 해당하는 여정이 없습니다.</div></div>';
 }
 
 function tL1(i){EX.l1[i]=!EX.l1[i];clearEB();render();}
@@ -485,8 +626,9 @@ async function submitEdit(){
 
 function toast(m,t){const e=document.createElement('div');e.className='toast '+t;e.textContent=m;document.body.appendChild(e);setTimeout(()=>e.remove(),3500);}
 
-document.getElementById("searchInput").addEventListener("input",()=>render());
+document.getElementById("searchInput").addEventListener("input",()=>{autoExpandPending=true;render();});
 document.querySelectorAll('.modal-overlay').forEach(el=>{el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('show')});});
+renderFilterChips();
 loadData();
 </script>
 </body>
