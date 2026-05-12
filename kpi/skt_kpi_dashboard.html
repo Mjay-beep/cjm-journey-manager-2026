@@ -268,14 +268,39 @@ function dal2(l1){
 // 시트 연동
 // ============================================================
 
-// 시트에서 데이터 불러오기
+// JSONP 헬퍼: fetch는 CORS 차단되므로 script 태그로 우회
+function jsonpGet(url, timeoutMs){
+  return new Promise((resolve, reject)=>{
+    const cb='_jsonp_'+Date.now()+'_'+Math.floor(Math.random()*1000);
+    const s=document.createElement('script');
+    let timer=null;
+    window[cb]=function(data){
+      resolve(data);
+      cleanup();
+    };
+    function cleanup(){
+      if(timer)clearTimeout(timer);
+      delete window[cb];
+      if(s.parentNode)s.parentNode.removeChild(s);
+    }
+    s.onerror=function(){
+      cleanup();
+      reject(new Error('JSONP script load failed'));
+    };
+    timer=setTimeout(()=>{
+      cleanup();
+      reject(new Error('JSONP timeout'));
+    },timeoutMs||15000);
+    const sep=url.indexOf('?')>=0?'&':'?';
+    s.src=url+sep+'callback='+cb+'&t='+Date.now();
+    document.head.appendChild(s);
+  });
+}
+
+// 시트에서 데이터 불러오기 (JSONP 방식)
 function loadFromSheet(){
   console.log('[loadFromSheet] 시작:', API);
-  fetch(API+'?t='+Date.now(),{method:'GET',cache:'no-store'})
-    .then(r=>{
-      console.log('[loadFromSheet] HTTP 응답:', r.status);
-      return r.json();
-    })
+  jsonpGet(API)
     .then(res=>{
       console.log('[loadFromSheet] 응답 데이터:', res);
       if(res.status==='ok' && Array.isArray(res.kpi) && res.kpi.length>0){
@@ -329,16 +354,15 @@ function sync(){
       console.log('[sync] 요청 전송 완료. 5초 후 자동 검증...');
       toast('저장 요청 전송 완료 (검증 중...)','ok');
       
-      // 3초 후 GET으로 실제 저장되었는지 검증
+      // 3초 후 JSONP로 실제 저장되었는지 검증
       setTimeout(()=>{
-        fetch(API+'?t='+Date.now(),{method:'GET',cache:'no-store'})
-          .then(r=>r.json())
+        jsonpGet(API)
           .then(res=>{
             if(res.status==='ok' && res.count===payload.data.length){
               console.log('[sync] 검증 성공: 시트에 '+res.count+'행 확인');
               toast('✓ 저장 확인 완료 ('+res.count+'행)','ok');
             } else {
-              console.warn('[sync] 검증 불일치 - 보낸 행:'+payload.data.length+', 시트:'+res.count);
+              console.warn('[sync] 검증 불일치 - 보낸 행:'+payload.data.length+', 시트:'+(res.count||'?'));
               toast('⚠️ 저장 검증 실패 - 시트를 확인해주세요','err');
             }
           })
