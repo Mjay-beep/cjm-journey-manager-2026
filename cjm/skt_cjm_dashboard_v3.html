@@ -419,7 +419,9 @@ function rL1(l1,idx){
     +'<div class="l1-toggle" style="background:'+(o?m.ac:m.tg)+';color:'+(o?'#fff':m.ac)+';border-color:'+m.bd+'">'+(o?'−':'+')+'</div>'
     +'</div>'
     +(o?'<div class="l2-wrap">'
-      +l1.l2s.map((l2,j)=>rL2(l2,m,idx+'_'+j,l1.name)).join('')
+      +(l1.l2s.length>0
+        ? l1.l2s.map((l2,j)=>rL2(l2,m,idx+'_'+j,l1.name)).join('')
+        : '<div style="padding:14px 8px;color:var(--text3);font-size:11px;text-align:center;font-style:italic">해당 채널의 여정 없음</div>')
       +l2a.map(rPendCard).join('')
       +'<button class="add-btn" onclick="event.stopPropagation();oAM('+aL2+')">＋ L2 추가 요청</button>'
     +'</div>':'')+'</div>';
@@ -469,6 +471,7 @@ function render(){
   const hasSearch = q.length>0;
   
   // 필터링: L4 단위에서 매치 판정 → 부모 자동 노출
+  // L1 컬럼은 항상 유지 (필터로 안 잘림)
   let d = DATA.map((l1, origIdx)=>{
     const l2s = l1.l2s.map((l2, origJ)=>{
       const l3s = l2.l3s.map((l3, origK)=>{
@@ -488,7 +491,7 @@ function render(){
       return false;
     });
     return {...l1, l2s, _origIdx:origIdx};
-  }).filter(l1=>l1.l2s.length>0);
+  }); // ← L1 컬럼은 자르지 않음 (빈 L1도 유지)
 
   // 자동 펼치기 (필터/검색 변경 직후 1회만 — 이후 사용자가 접을 수 있도록 보존)
   if((hasFilter || hasSearch) && autoExpandPending){
@@ -518,9 +521,14 @@ function render(){
   }
 
   rFlow(d);
-  document.getElementById("l1Grid").innerHTML = d.length>0
-    ? d.map(l1=>rL1(l1, l1._origIdx)).join("")
-    : '<div class="loading-screen"><div style="font-size:32px">🔍</div><div class="loading-text">선택한 채널/검색어에 해당하는 여정이 없습니다.</div></div>';
+  // 매치된 결과가 전혀 없는 경우만 안내 문구, 아니면 항상 L1 컬럼 6개 표시
+  let totalL4 = 0;
+  d.forEach(l1=>l1.l2s.forEach(l2=>l2.l3s.forEach(l3=>{totalL4+=l3.l4s.length})));
+  if((hasFilter || hasSearch) && totalL4===0){
+    document.getElementById("l1Grid").innerHTML = '<div class="loading-screen"><div style="font-size:32px">🔍</div><div class="loading-text">선택한 채널/검색어에 해당하는 여정이 없습니다.</div></div>';
+  } else {
+    document.getElementById("l1Grid").innerHTML = d.map(l1=>rL1(l1, l1._origIdx)).join("");
+  }
 }
 
 function tL1(i){EX.l1[i]=!EX.l1[i];clearEB();render();}
