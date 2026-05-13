@@ -190,6 +190,14 @@ function kt(items,l1,l2,lv){
 }
 
 function render(){
+  // 재렌더 전, 현재 열려있는 L2 카드들을 기억 (텍스트 기반으로 식별)
+  // .l2-card.open 안의 .l2-nm 텍스트로 매칭 (innerHTML 통째로 재생성되므로 DOM 참조 못 씀)
+  const openL2s=new Set();
+  document.querySelectorAll('.l2-card.open').forEach(c=>{
+    const nm=c.querySelector('.l2-nm');
+    if(nm)openL2s.add(nm.textContent.trim());
+  });
+
   let statusHtml='';
   if(_loadedFromSheet){
     statusHtml='<span class="load-status ok">● 시트 연동 정상</span>';
@@ -210,6 +218,16 @@ function render(){
     h+='</div></div>';
   });
   document.getElementById('main').innerHTML=h;
+
+  // 재렌더 후, 이전에 열려있던 L2 카드 복원
+  if(openL2s.size){
+    document.querySelectorAll('.l2-card').forEach(c=>{
+      const nm=c.querySelector('.l2-nm');
+      if(nm && openL2s.has(nm.textContent.trim())){
+        c.classList.add('open');
+      }
+    });
+  }
 }
 
 // Modal
@@ -277,7 +295,19 @@ function dal2(l1){
   if(!l2||!k||!w){alert('L2명, KPI 지표명, 이름을 입력해주세요.');return;}
   if(!D[l1])D[l1]={};if(D[l1][l2]){alert('이미 존재하는 L2입니다.');return;}
   const h='L2 액티비티 및 KPI 추가';
-  D[l1][l2]=[{k,desc,formula,cy,w,h}];cm();um();render();sync();
+  D[l1][l2]=[{k,desc,formula,cy,w,h}];
+  // 새로 추가한 L2는 자동으로 열린 상태로 렌더링되도록 미리 표식
+  cm();um();
+  // render() 직전에 _newL2 추적용 임시 DOM을 만들 수는 없으니, render 후 직접 펼침
+  render();
+  // 새 L2 카드 찾아서 열기
+  document.querySelectorAll('.l2-card').forEach(c=>{
+    const nm=c.querySelector('.l2-nm');
+    if(nm && nm.textContent.trim().replace(/^L2/,'').trim()===l2){
+      c.classList.add('open');
+    }
+  });
+  sync();
 }
 
 // ============================================================
