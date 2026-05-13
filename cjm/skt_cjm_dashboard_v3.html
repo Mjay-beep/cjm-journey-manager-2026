@@ -377,7 +377,6 @@ function rL3(l3,c,k,l1n,l2c,l2n){
     +'<span class="l3-code" style="color:'+c.ac+'">'+l3.code+'</span>'
     +'<span class="l3-name" style="color:'+c.tx+'">'+l3.name+'</span>'+dot
     +(l4a.length?'<span class="pending-badge">+'+l4a.length+'</span>':'')
-    +renderChannels(l3.channels)
     +'<span class="l3-count">'+tc+'</span>'
     +'<button class="l3-edit-btn" onclick="event.stopPropagation();oEM('+eBd+')" title="L3 편집 요청">✏️</button>'
     +'</div>'+(o?'<div class="l3-body">'
@@ -401,7 +400,6 @@ function rL2(l2,c,k,l1n){
     +'<span class="l2-code" style="background:'+c.tg+';color:'+c.ac+'">'+l2.code+'</span>'
     +'<span class="l2-name">'+l2.name+'</span>'+dot
     +(l3a.length?'<span class="pending-badge">+'+l3a.length+'</span>':'')
-    +renderChannels(l2.channels)
     +'<div class="l2-counts"><span>L3:'+l2.l3s.length+'</span><span>L4:'+t4+'</span></div>'
     +'<button class="l2-edit-btn" onclick="event.stopPropagation();oEM('+eL2+')" title="L2 편집 요청">✏️</button>'
     +'</div>'+(o?'<div class="l2-body">'
