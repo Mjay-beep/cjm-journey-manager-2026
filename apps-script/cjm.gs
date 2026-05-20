@@ -16,7 +16,7 @@
 //   (이미 배포한 적 있으면 "새 배포"가 아니라 "배포 관리"에서 업데이트)
 //
 // 연결된 웹 엔드포인트:
-//   https://script.google.com/macros/s/AKfycbwckTK8mJb1nf3ZZ1rPG7114DJJzgu0T93wdQi4S6LpvHf3MqqIlnxxa7zuk7b33RJyVA/exec
+//   https://script.google.com/macros/s/AKfycbwY-ZSmquMDmWaY39m_-CeTauo5ZXKrkyt8taQCsc-32bFj0YG_AjUEgwKz7mF01D2nEg/exec
 // ============================================================
 
 // ── 설정 ──

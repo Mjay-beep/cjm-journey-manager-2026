@@ -19,7 +19,7 @@
 // J: 삭제한 사람                ← 신규
 //
 // 연결된 웹 엔드포인트:
-//   https://script.google.com/macros/s/AKfycbwY-ZSmquMDmWaY39m_-CeTauo5ZXKrkyt8taQCsc-32bFj0YG_AjUEgwKz7mF01D2nEg/exec
+//   https://script.google.com/macros/s/AKfycbwckTK8mJb1nf3ZZ1rPG7114DJJzgu0T93wdQi4S6LpvHf3MqqIlnxxa7zuk7b33RJyVA/exec
 // ============================================================
 
 var SSID = '1sD604FpRUbi8mkT00DJxK3ErujIyhaxYzL302nuD7_A';

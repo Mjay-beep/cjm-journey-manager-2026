@@ -31,8 +31,8 @@ knowledge/                 참고 자료 (xlsx, pdf — 현장 개선 요청, �
   - `여정별 KPI Manager` — KPI 10열 (I=삭제여부, J=삭제한 사람, Soft Delete)
 
 ## GAS 웹 엔드포인트
-- CJM: `https://script.google.com/macros/s/AKfycbwckTK8mJb1nf3ZZ1rPG7114DJJzgu0T93wdQi4S6LpvHf3MqqIlnxxa7zuk7b33RJyVA/exec`
-- KPI: `https://script.google.com/macros/s/AKfycbwY-ZSmquMDmWaY39m_-CeTauo5ZXKrkyt8taQCsc-32bFj0YG_AjUEgwKz7mF01D2nEg/exec`
+- CJM: `https://script.google.com/macros/s/AKfycbwY-ZSmquMDmWaY39m_-CeTauo5ZXKrkyt8taQCsc-32bFj0YG_AjUEgwKz7mF01D2nEg/exec`
+- KPI: `https://script.google.com/macros/s/AKfycbwckTK8mJb1nf3ZZ1rPG7114DJJzgu0T93wdQi4S6LpvHf3MqqIlnxxa7zuk7b33RJyVA/exec`
 
 각 HTML 안에 `const API = '...'` 로 박혀 있다.
 
