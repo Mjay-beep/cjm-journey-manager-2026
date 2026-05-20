@@ -1,0 +1,52 @@
+﻿reqId,판정,분류,위치,요지,제안 코드/명칭,비고
+REQ_002,조건부,수정-L4,구매/가입/개통 > ord_phone_cart,장바구니를 탐색의 마지막 단계로,장바구니의 두 맥락(탐색 종료 / 결제 직전) L4 분리 검토,결정 필요
+REQ_003,수용,추가-L4,인입 > ent_app_auth 본인인증,신용카드 인증 추가,ent_app_auth_03 | 신용카드 인증,
+REQ_004,반려,수정-L2,탐색 > expl_srch,테스트 요청,제외,테스트 데이터
+REQ_005,수용,수정-L4,인입 > ent_store_consult,본인확인 → 방문 목적 확인,신규 ent_store_consult_auth | 방문 목적 확인,cmn_auth_01 공통코드 재사용 정책도 정비
+REQ_006,수용,추가-L4,인입 > ent_store_consult,STT 상담 녹음 동의,ent_store_consult_03 | STT 상담 녹음 동의,
+REQ_007,수용,구조-L2,구매/가입/개통 > ord_acc,액세서리 주문에 대리점 개통 섞임,ISSUE-A: 신규 L2 ord_offline 분리,구조 선결
+REQ_008,조건부,수정-L3,구매/가입/개통 > ord_offline_form,원스톱 개통 진행으로 명칭 수정,명칭 변경 전 두 L3(form/apply) 분기 합의 필요,정책 결정
+REQ_009,조건부,수정-L3,구매/가입/개통 > ord_combo_offline,L4 swing 화면 순서와 고객센터 기능 혼재,L4 표준 흐름 + 분기 표기로 재정렬,정책 결정
+REQ_010,수용,구조-L3,구매/가입/개통 > ord_combo_offline,왜 액세서리 L2에 결합 신청?,ISSUE-A 정리 시 ord_combo 또는 ord_offline로 이관,구조 선결
+REQ_011,수용,추가-L4,구매/가입/개통 > ord_offline_setup,개통완료 가입내역 MMS 수신,ord_offline_setup_05 | 개통완료 및 가입내역 MMS 수신,ISSUE-A 정리 후 새 L2로 이관
+REQ_013,반려,추가-L3,탐색 > expl_mbr,주요 혜택 프로그램 탐색,이미 expl_mbr_benefit 존재,요청자 안내
+REQ_014,조건부,추가-L2,서비스 이용,결합 관리,유지 및 확장 > exp_combo | 결합 관리 (또는 exp_family 흡수),위치 재배치
+REQ_015,수용,추가-L2,구매/가입/개통,사전예약 신청,ord_resv | 사전예약 신청,
+REQ_016,검토,일반,-,이벤트 페이지 탐색 집계 정의,KPI 가이드에 명시. CJM 구조 변경 X,KPI 영역
+REQ_017,회신,수정-L4,인입 > ent_app_onboard_01,TDS 온보딩 정의 문의,웰컴북/가이드북 별도 L4 분리 여부 회신 필요,회신 대기
+REQ_018,수용,모델확장,-,자동 가입 상품 태깅,"L4 attribute 또는 명칭에 ""(자동)"" 표기",모델 확장
+REQ_019,수용,추가-L4,인입 > ent_chat_purchase,전화상담 신청하기,ent_chat_purchase_04 | 전화상담 신청,
+REQ_020,수용,추가-L2,인입,Care/Marketing 캠페인 접촉,ent_camp | Care/Marketing 캠페인 접촉,L3로 IB/OB 분리
+REQ_021,검토,수정-L2,탐색 > expl_phone / expl_smart,L2 분리 이유,행동 관점 분리 유지 권장. TDS 합산은 channels 태그,정책 결정
+REQ_022,조건부,수정-L4,탐색 > expl_plan_list_03,TDS는 월 납부금액 조회/요금제 조회 적합,다이렉트 플랜 유지 + 신규 L4 expl_plan_list_04 | 월 납부금액 조회,TDS 특화 추가
+REQ_023,반려,추가-L2,탐색,인터넷/B tv,이미 expl_net 존재,요청자 안내
+REQ_024,수용,추가-L2,탐색,USIM/eSIM 탐색,expl_sim | USIM/eSIM 탐색,
+REQ_025,회신,수정-L3,구매/가입/개통 > ord_phone_order,디바이스 주문/주문서 분리 이유,"명칭 모호. ""디바이스 선택"" / ""가입 조건 선택"" 리네임 검토",회신 + 리네임
+REQ_026,회신,수정-L3,구매/가입/개통 > ord_phone_apply,주문서 vs 신청서 차이,"""가입 조건 입력"" / ""본인인증 및 약관 동의"" 리네임 검토",회신 + 리네임
+REQ_027,조건부,수정-L4,서비스 이용 > use_cs_app_01,TDS는 앱 설정 제외,"삭제 X, channels 태그로 TDS 제외",채널 태그
+REQ_028,회신,수정-L2,유지 및 확장 > exp_devchg,기변/USIM/eSIM 개통 정의,exp_devchg와 exp_line 별개 L2 안내. 통합 의도 확인,회신 대기
+REQ_029,수용,수정-L4,서비스 이용 > use_benefit_card_01,매직바코드(우주패스 포함) 사용,use_benefit_card_01 명칭 변경: 매직바코드 사용 (우주패스 포함),
+REQ_030,수용,추가-L4,서비스 이용 > use_benefit_set,할인형/적립형 선택,use_benefit_set_03 | 할인형/적립형 선택,
+REQ_031,수용,추가-L4,서비스 이용 > use_benefit_set,OK캐쉬백 탑재 및 적립 동의,use_benefit_set_04 | OK캐쉬백 탑재 및 적립 동의 설정,
+REQ_032,수용,추가-L4,서비스 이용 > use_benefit_set,포인트 비밀번호 설정,use_benefit_set_05 | 포인트 비밀번호 설정,
+REQ_033,수용,추가-L4,탐색 > expl_mbr_benefit,이벤트 탐색,expl_mbr_benefit_03 | 이벤트 탐색,
+REQ_034,수용,추가-L2,구매/가입/개통,T ID / 온라인 채널 가입,ord_member | T ID / 온라인 채널 회원가입,REQ_035와 통합
+REQ_035,수용,추가-L2,구매/가입/개통,T ID / 온라인 채널 가입,REQ_034와 동일,중복
+REQ_036,수용,추가-L3,구매/가입/개통 > ord_add,분실파손 보험 가입,ord_add_insur | 분실파손 보험 가입,
+REQ_037,수용,추가-L4,서비스 이용 > use_bill_stmt,요금안내서 재발행,use_bill_stmt_05 | 요금안내서 재발행,
+REQ_038,수용,추가-L4,서비스 이용 > use_bill_mobile,휴대폰 결제 한도 변경,use_bill_mobile_05 | 휴대폰 결제/콘텐츠 이용료 한도 변경,
+REQ_039,수용,추가-L4,서비스 이용 > use_pay_do,미납 요금 납부,use_pay_do_02 | 미납 요금 납부,use_pay_* prefix vs use_bill 부모 정합화 필요
+REQ_040,수용,추가-L2/L3,-,요금제 혜택 변경 / 지정번호 설정,use_info 또는 exp_*에 신설,
+REQ_041,조건부,추가-L2,구매/가입/개통,선택약정 가입/재가입,유지 및 확장 > exp_sa | 선택약정 가입/재가입,위치 재배치 권장
+REQ_042,조건부,추가-L2,유지 및 확장,인터넷 주소 이전 / 망 작업 SMS,use_* 산하 인터넷/Btv 관리 L2 신설,
+REQ_043,수용,추가-L4,이탈 > exit_line_req,재가입 혜택 수신 동의,exit_line_req_04 | 재가입 혜택 수신 동의,
+REQ_044,수용,수정-L4,유지 및 확장 > ord_net_order_01,인터넷&IPTV 주문/가입 분리,L4 2개 분리: 주문(청약) / 가입(개통 시작),exp_net prefix 정합도 같이
+REQ_045,수용,수정-L4,서비스 이용 > use_sec_lost_01,분실/정지/해제 분리,"L4 4개 분할: 분실 신고, 분실 해제, 정지, 정지 해제",
+REQ_046,조건부,구조,서비스 이용 > use_cs_offline,상담 인입/처리중/완료 분리,상태는 L4가 아닌 별도 status 필드/태그 도입 권장,모델 확장
+REQ_047,수용,추가-L3,인입 > ent_push,MMS/RCS 알림,ent_push_msg | MMS/RCS 알림,
+REQ_048,수용,추가-L4,서비스 이용 > use_data_remain,데이터 소진 문자 수신,use_data_remain_04 | 데이터 소진 문자 수신 (50/80/100%),
+REQ_049,조건부,수정-L4,탐색 > expl_plan_theme,0틴/0캠퍼스 → 추천 요금제,"신규 L4 expl_plan_theme_02 | 추천 요금제 추가, 기존 영 요금제는 유지",
+REQ_050,수용,추가-L3,탐색 > expl_prsnl,단말 추천,expl_prsnl_device | 맞춤 단말 추천,
+REQ_051,검토,구조,서비스 이용,상품별 온보딩 상태 추가,REQ_046와 동일 결: status 필드 도입 결정,모델 확장
+REQ_052,조건부,추가-L3,인입 > ent_ext (요청),SKT 자사 앱 인입,ent_app_cross | SKT 자사 앱 간 이동 (ent_app 산하로 위치 변경),위치 변경
+REQ_053,조건부,추가-L3,인입 > ent_ext,PA 인입,ent_ext_display | 디스플레이/메인 광고 인입,PA 정의 회신 필요
