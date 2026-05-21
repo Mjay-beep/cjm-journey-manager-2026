@@ -121,17 +121,17 @@ body{font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;background:var(--
 
 <script>
 const API='https://script.google.com/macros/s/AKfycbwckTK8mJb1nf3ZZ1rPG7114DJJzgu0T93wdQi4S6LpvHf3MqqIlnxxa7zuk7b33RJyVA/exec';
-// 8열: L1, L2, KPI지표명, KPI설명, 산식/정의, 측정주기, 수정한사람, 수정내용
+// 시트 7열: L1, L2, KPI지표명, KPI설명, 산식/정의, 측정주기, 출처
+// (v9부터 KPI 추가/수정/삭제는 사용자 직접 시트 변경 X → KPI_검토_요청에 요청 접수)
 // E: 시트 로드 실패 시 fallback으로만 사용되는 초기 시드 데이터
 const E=[["인입", "", "전체 인입 전환율 (Acquisition Conversion Rate)", "모든 채널을 통해 유입된 고객이 서비스 탐색/이용으로 전환된 비율을 측정합니다. Salesforce의 Lead Conversion Rate에 해당합니다.", "전환 고객 수 / 전체 유입 수 × 100", "월간", "", ""], ["인입", "", "채널별 고객획득비용 (CAC)", "고객 1인 획득에 소요된 채널별 평균 비용을 측정합니다. Adobe Analytics/Salesforce Marketing Cloud에서 핵심 지표로 활용됩니다.", "채널별 마케팅 비용 / 채널별 신규 획득 수", "월간", "", ""], ["인입", "니즈 발생", "채널별 유입 비율", "전체 유입 대비 각 채널(TV/온라인/SNS/추천 등)을 통한 유입 비율을 측정합니다. Adobe Analytics의 Marketing Channel 리포트에 해당합니다.", "채널별 유입 수 / 전체 유입 수 × 100", "월간", "", ""], ["인입", "(T4S) 공식 앱/사이트 인입", "DAU / MAU", "일간·월간 앱 접속 고유 사용자 수 및 Stickiness(DAU/MAU)를 측정합니다. Firebase/GA4의 핵심 활성도 지표입니다.", "DAU, MAU, Stickiness = DAU / MAU × 100", "일간/월간", "", ""], ["인입", "(T4S) 공식 앱/사이트 인입", "바운스율 (Bounce Rate)", "단일 페이지만 조회하고 이탈한 세션 비율을 측정합니다. GA4/Adobe Analytics의 기본 세션 품질 지표입니다.", "단일 페이지 세션 / 전체 세션 × 100", "일간", "", ""], ["인입", "(대리점/판매점) 방문", "매장 방문→상담 전환율", "매장 방문 고객 중 실제 상담으로 전환된 비율을 측정합니다. Salesforce의 Walk-in Conversion Rate에 해당합니다.", "상담 진행 수 / 매장 방문 수 × 100", "월간", "", ""], ["인입", "푸시/알림 인입", "푸시 오픈율 (Push Open Rate)", "푸시를 수신한 사용자 중 실제 클릭한 비율을 측정합니다. Salesforce Marketing Cloud/Braze의 핵심 메시징 지표입니다.", "푸시 클릭 수 / 푸시 수신 수 × 100", "일간", "", ""], ["인입", "고객센터 전화 인입", "첫통화 해결률 (FCR)", "고객 문의가 첫 번째 통화에서 해결된 비율을 측정합니다. Salesforce Service Cloud의 핵심 CS 효율 지표입니다.", "첫 통화 해결 건 / 전체 상담 건 × 100", "월간", "", ""], ["인입", "고객센터 전화 인입", "평균 대기시간 (ASA)", "고객이 상담사 연결까지 대기하는 평균 시간을 측정합니다. Genesys/Salesforce Service Cloud의 표준 SLA 지표입니다.", "총 대기시간 / 응대 건수", "일간", "", ""], ["인입", "디지털/챗봇 상담 인입", "챗봇 자동해결률 (Bot Resolution Rate)", "챗봇이 상담사 전환 없이 자동으로 해결한 상담 비율을 측정합니다. Salesforce Einstein Bot의 핵심 AI 효율 지표입니다.", "자동해결 건 / 전체 챗봇 상담 건 × 100", "월간", "", ""], ["인입", "외부 채널 인입", "외부 채널 전환율", "외부 제휴 채널(비교사이트, 제휴앱 등)로 유입된 사용자의 서비스 전환 비율을 측정합니다.", "전환 수 / 외부 채널 유입 수 × 100", "월간", "", ""], ["탐색", "", "탐색→주문 전환율 (Browse-to-Order Rate)", "탐색 단계에 진입한 고객 중 실제 주문/가입으로 전환된 비율을 측정합니다. Adobe Analytics의 Product Conversion Funnel에 해당합니다.", "주문·가입 수 / 탐색 세션 수 × 100", "월간", "", ""], ["탐색", "", "평균 탐색 세션 시간", "탐색 단계에서 고객이 머무는 평균 시간을 측정합니다. 탐색 깊이와 참여도를 나타내는 GA4 기본 지표입니다.", "탐색 총 세션 시간 / 탐색 세션 수", "일간", "", ""], ["탐색", "상품/서비스 검색", "검색 CTR (Search Click-Through Rate)", "검색 결과에서 실제 클릭이 발생한 비율을 측정합니다. Algolia/Adobe Search의 검색 품질 핵심 지표입니다.", "결과 클릭 수 / 검색 수행 수 × 100", "일간", "", ""], ["탐색", "상품/서비스 검색", "Zero Result 비율", "검색 결과가 0건인 검색의 비율로, 검색 품질을 나타냅니다. 검색엔진 최적화의 핵심 모니터링 지표입니다.", "결과 0건 수 / 전체 검색 수 × 100", "일간", "", ""], ["탐색", "휴대폰 탐색", "상세페이지 전환율 (PDP Conversion Rate)", "단말 상세 페이지 조회 후 주문으로 전환된 비율을 측정합니다. Adobe Commerce/GA4 Enhanced Ecommerce의 핵심 지표입니다.", "주문 진입 수 / 상세 페이지 조회 수 × 100", "일간", "", ""], ["탐색", "스마트워치 및 태블릿 탐색", "", "", "", "", "", ""], ["탐색", "요금제 탐색", "요금제→가입 전환율", "요금제 상세 확인 후 실제 가입/변경으로 전환된 비율을 측정합니다.", "가입·변경 수 / 상세 조회 수 × 100", "월간", "", ""], ["탐색", "예상 금액 탐색", "시뮬레이션→주문 전환율", "예상 금액 시뮬레이션 완료 후 주문으로 진입한 비율을 측정합니다.", "주문 진입 수 / 시뮬레이터 완료 수 × 100", "월간", "", ""], ["탐색", "인터넷/B tv 탐색", "유선 상품 탐색→주문 전환율", "인터넷/B tv 상품 탐색 후 주문으로 전환된 비율을 측정합니다.", "주문 진입 수 / 유선 상품 조회 수 × 100", "월간", "", ""], ["탐색", "부가서비스 탐색", "부가서비스→가입 전환율", "부가서비스 상세 확인 후 가입으로 전환된 비율을 측정합니다.", "가입 수 / 상세 조회 수 × 100", "월간", "", ""], ["탐색", "T우주 구독 탐색", "T우주 상세→담기 전환율 (Add-to-Cart Rate)", "상품 상세 조회 후 장바구니 담기로 전환된 비율을 측정합니다. Adobe Commerce의 핵심 퍼널 지표입니다.", "담기 수 / 상세 조회 수 × 100", "일간", "", ""], ["탐색", "멤버십/혜택 탐색", "", "", "", "", "", ""], ["탐색", "로밍 서비스 탐색", "로밍→가입 전환율", "로밍 상품 조회 후 가입으로 전환된 비율을 측정합니다.", "가입 수 / 상품 조회 수 × 100", "월간", "", ""], ["탐색", "이용 안내/FAQ 탐색", "FAQ 자기해결률 (Case Deflection Rate)", "FAQ 조회 후 추가 CS 연결 없이 해결된 비율을 측정합니다. Salesforce Knowledge의 Case Deflection Rate에 해당합니다.", "(FAQ 조회 - CS 연결) / FAQ 조회 × 100", "월간", "", ""], ["탐색", "상담을 통한 탐색", "상담 후 전환율", "상담을 통해 탐색한 후 실제 가입/주문으로 전환된 비율을 측정합니다.", "전환 수 / 상담 탐색 건 × 100", "월간", "", ""], ["탐색", "개인화 추천", "개인화 추천 CTR", "개인화 추천 영역에서 클릭이 발생한 비율을 측정합니다. Salesforce Einstein/Adobe Target의 추천 효과 핵심 지표입니다.", "추천 클릭 수 / 추천 노출 수 × 100", "일간", "", ""], ["탐색", "외부 채널 탐색", "", "", "", "", "", ""], ["구매/가입/개통", "", "주문 전환율 (Order Conversion Rate)", "전체 방문 세션 대비 주문/가입이 완료된 비율을 측정합니다. GA4/Adobe Analytics의 Ecommerce Conversion Rate에 해당합니다.", "주문 완료 수 / 전체 세션 수 × 100", "일간", "", ""], ["구매/가입/개통", "", "장바구니 이탈률 (Cart Abandonment Rate)", "장바구니에 상품을 담았지만 결제를 완료하지 않은 비율을 측정합니다. Adobe Commerce/Salesforce Commerce Cloud의 핵심 지표입니다.", "(담기 수 - 결제 완료 수) / 담기 수 × 100", "일간", "", ""], ["구매/가입/개통", "", "평균주문금액 (AOV)", "주문 건당 평균 결제 금액을 측정합니다. 모든 커머스 플랫폼의 기본 매출 지표입니다.", "총 주문 금액 / 주문 건수", "월간", "", ""], ["구매/가입/개통", "휴대폰 및 스마트 기기 주문", "주문서 진입률", "상품 상세 페이지 방문 후 주문서로 진입한 비율을 측정합니다. Checkout Initiation Rate에 해당합니다.", "주문서 진입 수 / 상세 방문 수 × 100", "일간", "", ""], ["구매/가입/개통", "휴대폰 및 스마트 기기 주문", "결제 성공률 (Payment Success Rate)", "결제를 시도한 건 중 성공한 비율을 측정합니다. PG사/Salesforce Commerce Cloud의 결제 안정성 핵심 지표입니다.", "결제 성공 수 / 결제 시도 수 × 100", "일간", "", ""], ["구매/가입/개통", "USIM/eSIM 개통", "셀프개통 성공률", "셀프개통 요청 건 중 성공적으로 완료된 비율을 측정합니다.", "개통 완료 수 / 개통 요청 수 × 100", "일간", "", ""], ["구매/가입/개통", "USIM/eSIM 개통", "셀프개통 비율", "전체 개통 중 셀프개통이 차지하는 비율을 측정합니다. 디지털 전환 효율 지표입니다.", "셀프개통 수 / 전체 개통 수 × 100", "월간", "", ""], ["구매/가입/개통", "인터넷/B tv 주문 및 개통", "유선 주문 완료율", "유선 주문서 진입 후 주문을 완료한 비율을 측정합니다. Checkout Completion Rate에 해당합니다.", "주문 완료 수 / 주문서 진입 수 × 100", "일간", "", ""], ["구매/가입/개통", "결합 상품 가입", "결합 가입 전환율", "결합 상품 탐색 후 실제 가입으로 전환된 비율을 측정합니다.", "결합 가입 수 / 결합 탐색 수 × 100", "월간", "", ""], ["구매/가입/개통", "로밍 서비스 가입", "로밍 가입 완료율", "로밍 가입 프로세스를 시작한 고객 중 완료한 비율을 측정합니다.", "가입 완료 수 / 가입 시작 수 × 100", "일간", "", ""], ["구매/가입/개통", "부가서비스 가입", "부가서비스 가입 전환율", "부가서비스 탐색 후 실제 가입으로 전환된 비율을 측정합니다.", "가입 수 / 탐색 수 × 100", "월간", "", ""], ["구매/가입/개통", "T우주 구독 가입", "카트→결제 전환율 (Cart-to-Purchase Rate)", "장바구니 진입 후 결제를 완료한 비율을 측정합니다. 커머스 핵심 퍼널 지표입니다.", "결제 완료 수 / 카트 진입 수 × 100", "일간", "", ""], ["구매/가입/개통", "T우주 구독 가입", "구독 ARPU", "구독자 1인당 평균 매출을 측정합니다. Subscription Revenue Per User로 구독 비즈니스의 핵심 매출 지표입니다.", "구독 총 매출 / 구독자 수", "월간", "", ""], ["구매/가입/개통", "액세서리 주문", "액세서리 주문 전환율", "액세서리 상세 방문 후 주문으로 전환된 비율을 측정합니다.", "주문 수 / 상세 방문 수 × 100", "일간", "", ""], ["구매/가입/개통", "[대리점/고객센터] 구매/개통", "오프라인 구매/개통 완료율", "대리점/고객센터에서 구매·개통을 시작한 건 중 완료한 비율을 측정합니다.", "완료 수 / 시작 수 × 100", "월간", "", ""], ["서비스 이용", "", "고객 만족도 (CSAT)", "서비스 이용 후 만족으로 응답한 비율을 측정합니다. Salesforce Service Cloud/Adobe Experience Platform의 CX 핵심 지표입니다.", "만족 응답 / 전체 응답 × 100", "월간", "", ""], ["서비스 이용", "", "NPS (순추천지수)", "추천 의향 고객 비율에서 비추천 고객 비율을 뺀 지수를 측정합니다. Qualtrics/Medallia/Salesforce의 고객 충성도 대표 지표입니다.", "추천(9-10)% - 비추천(0-6)%", "분기", "", ""], ["서비스 이용", "", "디지털 채널 이용률", "전체 서비스 이용 중 디지털 채널(앱/웹)을 통한 비율을 측정합니다. 디지털 전환 성과 지표입니다.", "디지털 채널 이용 수 / 전체 이용 수 × 100", "월간", "", ""], ["서비스 이용", "요금/납부 관리", "요금 납부 적시율", "납부 기한 내 납부한 건의 비율을 측정합니다. 빌링 건전성의 핵심 지표입니다.", "기한내 납부 건 / 전체 청구 건 × 100", "월간", "", ""], ["서비스 이용", "요금/납부 관리", "미납률", "전체 청구 대비 미납된 비율을 측정합니다.", "미납 건수 / 전체 청구 건 × 100", "월간", "", ""], ["서비스 이용", "데이터/통화 관리", "", "", "", "", "", ""], ["서비스 이용", "나의 가입정보 관리", "", "", "", "", "", ""], ["서비스 이용", "구독 이용/관리", "구독 해지율 (Churn Rate)", "전월말 구독자 대비 당월 해지한 비율을 측정합니다. 모든 구독 비즈니스의 핵심 리텐션 지표입니다.", "월 해지 수 / 전월말 구독자 수 × 100", "월간", "", ""], ["서비스 이용", "혜택 이용 및 관리 (멤버십)", "포인트 사용률 (Redemption Rate)", "적립된 포인트 중 실제 사용된 비율을 측정합니다. 로열티 프로그램의 활성도를 나타내는 핵심 지표입니다.", "사용 포인트 / 적립 포인트 × 100", "월간", "", ""], ["서비스 이용", "혜택 이용 및 관리 (멤버십)", "쿠폰 사용률", "다운로드된 쿠폰 중 실제 사용된 비율을 측정합니다. Salesforce Marketing Cloud의 Offer Redemption Rate에 해당합니다.", "쿠폰 사용 수 / 다운로드 수 × 100", "월간", "", ""], ["서비스 이용", "로밍 서비스 이용 및 관리", "", "", "", "", "", ""], ["서비스 이용", "보안/분실 관리", "유심보호 가입률", "전체 가입자 중 유심보호 서비스에 가입한 비율을 측정합니다.", "유심보호 가입 수 / 전체 가입자 수 × 100", "월간", "", ""], ["서비스 이용", "고객 지원/CS", "FAQ 자기해결률 (Case Deflection Rate)", "FAQ 조회 후 추가 CS 연결 없이 해결된 비율을 측정합니다. Salesforce Knowledge/Service Cloud의 핵심 셀프서비스 지표입니다.", "CS 미연결 수 / FAQ 조회 수 × 100", "월간", "", ""], ["서비스 이용", "쇼핑 관리", "", "", "", "", "", ""], ["유지 및 확장", "", "고객 생애가치 (CLV / LTV)", "고객 1인이 전체 거래 기간 동안 창출하는 예상 총 매출을 측정합니다. Salesforce CDP/Adobe Real-Time CDP의 핵심 세그먼트 지표입니다.", "평균 월 매출 × 평균 유지 개월 수", "분기", "", ""], ["유지 및 확장", "", "업셀·크로스셀 전환율", "기존 고객에게 상위 상품 또는 추가 상품을 제안하여 전환된 비율을 측정합니다. Salesforce Sales Cloud의 Opportunity Win Rate에 해당합니다.", "전환 수 / 제안 수 × 100", "월간", "", ""], ["유지 및 확장", "", "ARPU 증가율", "고객 1인당 평균 매출의 전월 대비 증가율을 측정합니다.", "(당월 ARPU - 전월 ARPU) / 전월 ARPU × 100", "월간", "", ""], ["유지 및 확장", "기기변경", "기기변경 완료율", "기기변경 프로세스 진입 후 완료한 비율을 측정합니다.", "완료 수 / 진입 수 × 100", "월간", "", ""], ["유지 및 확장", "기기변경", "기기변경 ARPU 변화", "기기 변경 전후의 ARPU 변화를 측정합니다. 업셀 효과를 나타냅니다.", "변경 후 ARPU - 변경 전 ARPU", "월간", "", ""], ["유지 및 확장", "USIM/eSIM 개통/추가", "추가 회선 개통률", "추가 회선 개통을 시도한 건 중 완료한 비율을 측정합니다.", "개통 완료 수 / 개통 시도 수 × 100", "월간", "", ""], ["유지 및 확장", "인터넷/B tv 확장", "유선 업그레이드 전환율", "유선 상품 업그레이드를 제안받은 고객 중 전환된 비율을 측정합니다.", "업그레이드 수 / 제안 수 × 100", "월간", "", ""], ["유지 및 확장", "구독 확장/추가", "추가구독 전환율", "기존 구독자 중 추가 구독을 한 비율을 측정합니다. Cross-sell Conversion Rate에 해당합니다.", "추가 구독 수 / 기존 구독자 수 × 100", "월간", "", ""], ["유지 및 확장", "가족결합 신청/관리", "가족결합 유지율", "가족결합 가입 후 유지되고 있는 비율을 측정합니다. 결합 상품의 Lock-in 효과 지표입니다.", "유지 건 / 전체 가족결합 건 × 100", "월간", "", ""], ["유지 및 확장", "[대리점/고객센터] 변경 관리", "오프라인→디지털 전환율", "오프라인 방문 고객을 디지털 채널로 전환시킨 비율을 측정합니다.", "디지털 전환 수 / 오프라인 방문 수 × 100", "월간", "", ""], ["이탈", "", "월간 해지율 (Monthly Churn Rate)", "전월말 전체 가입자 대비 당월 해지된 비율을 측정합니다. 통신사/구독 비즈니스의 가장 중요한 이탈 지표입니다.", "당월 해지 수 / 전월말 가입자 수 × 100", "월간", "", ""], ["이탈", "", "리텐션율 (Retention Rate)", "특정 기간 시작 시점 고객 중 기간 종료까지 유지된 비율을 측정합니다. Salesforce CDP의 핵심 코호트 분석 지표입니다.", "기간말 유지 고객 수 / 기간초 고객 수 × 100", "월간", "", ""], ["이탈", "", "해지 방어 성공률 (Save Rate)", "해지를 시도한 고객 중 리텐션 활동으로 해지를 철회한 비율을 측정합니다. 통신사 리텐션팀의 핵심 KPI입니다.", "해지 철회 수 / 해지 시도 수 × 100", "월간", "", ""], ["이탈", "회선 해지", "회선 해지율", "전체 회선 대비 해지된 회선 비율을 측정합니다.", "해지 회선 수 / 전체 회선 수 × 100", "월간", "", ""], ["이탈", "회선 해지", "해지 사유 분석", "해지 사유별(요금 불만/서비스 불만/타사 전환 등) 비율을 분석합니다. VOC 기반 Root Cause 분석 지표입니다.", "사유별 해지 수 / 전체 해지 × 100", "월간", "", ""], ["이탈", "T우주 구독 해지", "구독 해지율 (Monthly)", "전월말 구독자 대비 당월 해지 비율을 측정합니다.", "월 해지 수 / 전월말 구독자 수 × 100", "월간", "", ""], ["이탈", "T우주 구독 해지", "리텐션 제안 수락률", "해지 시도 시 리텐션 제안(할인/업그레이드 등)을 수락한 비율을 측정합니다.", "제안 수락 수 / 해지 시도 수 × 100", "월간", "", ""], ["이탈", "T우주 구독 해지", "해지후 재가입률 (Win-back Rate)", "해지 후 30일 이내에 재가입한 비율을 측정합니다. Salesforce의 Win-back Campaign 효과 지표입니다.", "30일내 재가입 수 / 해지 수 × 100", "월간", "", ""], ["이탈", "부가서비스 해지", "해지 신청율", "전체 부가서비스 가입 대비 해지 신청 비율을 측정합니다.", "해지 신청 수 / 전체 가입 수 × 100", "월간", "", ""], ["이탈", "회원 탈퇴", "탈퇴 신청률", "전체 회원 대비 탈퇴를 신청한 비율을 측정합니다.", "탈퇴 신청 수 / 전체 회원 수 × 100", "월간", "", ""], ["이탈", "인터넷/유선 해지", "유선 해지율", "전체 유선 가입 대비 해지된 비율을 측정합니다.", "유선 해지 수 / 전체 유선 가입 × 100", "월간", "", ""]];
 const L1C={'인입':'#2563EB','탐색':'#7C3AED','주문':'#DB2777','구매/가입/개통':'#DB2777','개통':'#D97706','서비스이용':'#059669','서비스 이용':'#059669','확장':'#0891B2','유지 및 확장':'#0891B2','이탈':'#DC2626'};
 const L1O=['인입','탐색','구매/가입/개통','서비스 이용','유지 및 확장','이탈'];
 let D={},L1K={};
 let _loadedFromSheet=false;  // 시트에서 로드 성공했는지 추적
-let _DEL=[];  // soft delete된 행 보관 (sync 시 시트에 그대로 다시 써야 보존됨)
 
 function proc(rows){
-  D={};L1K={};_DEL=[];
+  D={};L1K={};
   // Detect L1 values from data
   const l1Set=new Set();
   rows.forEach(r=>{if(r[0])l1Set.add(r[0]);});
@@ -140,37 +140,18 @@ function proc(rows){
     L1O.length=0;l1Set.forEach(v=>L1O.push(v));
   }
   rows.forEach(r=>{
-    const[l1,l2,k,desc,formula,cy]=r;
+    // 7열: L1, L2, KPI지표명, KPI설명, 산식/정의, 측정주기, 출처
+    const[l1,l2,k,desc,formula,cy,src]=r;
     if(!l1)return;
-    // 삭제된 행(I열=Y): 화면 데이터엔 안 넣고 _DEL에만 보관 → sync 시 시트에 그대로 다시 씀
-    const isDeleted=String(r[8]||'').toUpperCase()==='Y';
-    if(isDeleted){
-      _DEL.push([l1,l2||'',k||'',desc||'',formula||'',cy||'',r[6]||'',r[7]||'','Y',r[9]||'']);
-      return;
-    }
     if(!L1O.includes(l1)){L1O.push(l1);}
-    if(!l2&&k){if(!L1K[l1])L1K[l1]=[];L1K[l1].push({k,desc:desc||'',formula:formula||'',cy:cy||'',w:r[6]||'',h:r[7]||''});return;}
+    // L2 없고 KPI 있음 → L1 차원 KPI
+    if(!l2&&k){if(!L1K[l1])L1K[l1]=[];L1K[l1].push({k,desc:desc||'',formula:formula||'',cy:cy||'',src:src||''});return;}
     if(!l2)return;
     if(!D[l1])D[l1]={};if(!D[l1][l2])D[l1][l2]=[];
-    if(k)D[l1][l2].push({k,desc:desc||'',formula:formula||'',cy:cy||'',w:r[6]||'',h:r[7]||''});
+    if(k)D[l1][l2].push({k,desc:desc||'',formula:formula||'',cy:cy||'',src:src||''});
   });
-  console.log('[proc] 활성 행 처리 완료, 삭제 보관 행: '+_DEL.length+'건');
+  console.log('[proc] 처리 완료, L1='+L1O.length+', L2='+Object.values(D).reduce((a,v)=>a+Object.keys(v).length,0));
   um();
-}
-function toR(){
-  const r=[];
-  // 활성 행: 10열로 출력 (I/J열은 빈값)
-  L1O.forEach(l1=>{
-    if(L1K[l1])L1K[l1].forEach(m=>r.push([l1,'',m.k,m.desc,m.formula,m.cy,m.w,m.h,'','']));
-    if(!D[l1])return;
-    Object.entries(D[l1]).forEach(([l2,ks])=>{
-      if(!ks.length)r.push([l1,l2,'','','','','','','','']);
-      ks.forEach(m=>r.push([l1,l2,m.k,m.desc,m.formula,m.cy,m.w,m.h,'','']));
-    });
-  });
-  // 삭제 보관 행: _DEL에 들어있는 그대로 append (이미 10열, I=Y)
-  _DEL.forEach(row=>r.push(row));
-  return r;
 }
 function um(){
   const tl2=Object.values(D).reduce((a,v)=>a+Object.keys(v).length,0);
@@ -234,80 +215,72 @@ function render(){
 function tog(o){document.querySelectorAll('.l2-card').forEach(c=>{o?c.classList.add('open'):c.classList.remove('open')});}
 function cm(){document.getElementById('mbg').classList.remove('show');}
 
+// 안내 메시지 (모달에 표시)
+const REVIEW_NOTICE='<div style="padding:8px 12px;background:#FFF7E6;border-left:3px solid #F59E0B;border-radius:4px;margin:8px 0;font-size:11.5px;color:#92400E">⏳ 관리자 검토 후 KPI Manager에 반영됩니다 (직접 변경 X)</div>';
+
 function oa(l1,l2,lv){
   const tgt=lv==='l1'?'<span class="tag tag-l1">L1</span> '+esc(l1):'<span class="tag tag-l1">L1</span> '+esc(l1)+' → <span class="tag tag-l2">L2</span> '+esc(l2);
-  document.getElementById('mdl').innerHTML='<h3>KPI 추가</h3><div class="msub">'+tgt+'</div><label>KPI 지표명 *</label><input id="mk" placeholder="예: 앱 설치 전환율"><label>KPI 설명</label><textarea id="md" placeholder="지표에 대한 설명"></textarea><label>산식/정의 (예시)</label><textarea id="mf" placeholder="예: 전환 수 / 전체 유입 수 × 100"></textarea><label>측정주기</label><select id="mc"><option>일간</option><option selected>월간</option><option>분기</option></select><label>이름 *</label><input id="mw" placeholder="이름"><div class="mbtns"><button class="cc" onclick="cm()">취소</button><button class="ok" onclick="da(\''+esc(l1)+'\',\''+esc(l2)+'\',\''+lv+'\')">추가</button></div>';
+  document.getElementById('mdl').innerHTML='<h3>KPI 추가 요청</h3><div class="msub">'+tgt+'</div>'+REVIEW_NOTICE+'<label>KPI 지표명 *</label><input id="mk" placeholder="예: 앱 설치 전환율"><label>KPI 설명</label><textarea id="md" placeholder="지표에 대한 설명"></textarea><label>산식/정의 (예시)</label><textarea id="mf" placeholder="예: 전환 수 / 전체 유입 수 × 100"></textarea><label>측정주기</label><select id="mc"><option>일간</option><option selected>월간</option><option>분기</option></select><label>요청자 *</label><input id="mw" placeholder="요청자 이름"><div class="mbtns"><button class="cc" onclick="cm()">취소</button><button class="ok" onclick="da(\''+esc(l1)+'\',\''+esc(l2)+'\',\''+lv+'\')">요청 제출</button></div>';
   document.getElementById('mbg').classList.add('show');setTimeout(()=>document.getElementById('mk').focus(),80);
 }
 function da(l1,l2,lv){
   const k=document.getElementById('mk').value.trim(),desc=document.getElementById('md').value.trim(),formula=document.getElementById('mf').value.trim(),cy=document.getElementById('mc').value,w=document.getElementById('mw').value.trim();
-  if(!k||!w){alert('지표명과 이름을 입력해주세요.');return;}
-  const h=lv.toUpperCase()+' KPI 추가';
-  if(lv==='l1'){if(!L1K[l1])L1K[l1]=[];L1K[l1].push({k,desc,formula,cy,w,h});}
-  else{if(!D[l1])D[l1]={};if(!D[l1][l2])D[l1][l2]=[];D[l1][l2].push({k,desc,formula,cy,w,h});}
-  cm();um();render();sync();
+  if(!k||!w){alert('지표명과 요청자를 입력해주세요.');return;}
+  const content='[설명] '+desc+'\n[산식] '+formula+'\n[주기] '+cy;
+  submitReview({reqType:'추가', l1:l1, l2Name:(lv==='l1'?'':l2), kpiName:k, content:content, requester:w});
 }
 
 function oe(l1,l2,i,lv){
   const m=lv==='l1'?L1K[l1][i]:D[l1][l2][i];
   const tgt=lv==='l1'?'<span class="tag tag-l1">L1</span> '+esc(l1):'<span class="tag tag-l1">L1</span> '+esc(l1)+' → <span class="tag tag-l2">L2</span> '+esc(l2);
-  document.getElementById('mdl').innerHTML='<h3>KPI 수정</h3><div class="msub">'+tgt+'</div><label>KPI 지표명</label><input id="mk" value="'+esc(m.k)+'"><label>KPI 설명</label><textarea id="md">'+esc(m.desc)+'</textarea><label>산식/정의 (예시)</label><textarea id="mf">'+esc(m.formula)+'</textarea><label>측정주기</label><select id="mc"><option'+(m.cy==='일간'?' selected':'')+'>일간</option><option'+(m.cy==='월간'?' selected':'')+'>월간</option><option'+(m.cy==='분기'?' selected':'')+'>분기</option><option'+(m.cy==='일간/월간'?' selected':'')+'>일간/월간</option></select><label>이름 *</label><input id="mw" placeholder="이름" value="'+esc(m.w)+'"><div class="mbtns"><button class="cc" onclick="cm()">취소</button><button class="ok" onclick="ce(\''+esc(l1)+'\',\''+esc(l2)+'\','+i+',\''+lv+'\')">수정 확인</button></div>';
+  document.getElementById('mdl').innerHTML='<h3>KPI 수정 요청</h3><div class="msub">'+tgt+'</div>'+REVIEW_NOTICE+'<label>KPI 지표명</label><input id="mk" value="'+esc(m.k)+'"><label>KPI 설명</label><textarea id="md">'+esc(m.desc)+'</textarea><label>산식/정의 (예시)</label><textarea id="mf">'+esc(m.formula)+'</textarea><label>측정주기</label><select id="mc"><option'+(m.cy==='일간'?' selected':'')+'>일간</option><option'+(m.cy==='월간'?' selected':'')+'>월간</option><option'+(m.cy==='분기'?' selected':'')+'>분기</option><option'+(m.cy==='일간/월간'?' selected':'')+'>일간/월간</option></select><label>요청자 *</label><input id="mw" placeholder="요청자 이름"><div class="mbtns"><button class="cc" onclick="cm()">취소</button><button class="ok" onclick="ce(\''+esc(l1)+'\',\''+esc(l2)+'\','+i+',\''+lv+'\')">수정 확인</button></div>';
   document.getElementById('mbg').classList.add('show');
+  // 원본 데이터 저장 (수정 사항 비교용)
+  window._editOrig={k:m.k,desc:m.desc,formula:m.formula,cy:m.cy};
 }
 function ce(l1,l2,i,lv){
   const k=document.getElementById('mk').value.trim(),desc=document.getElementById('md').value.trim(),formula=document.getElementById('mf').value.trim(),cy=document.getElementById('mc').value,w=document.getElementById('mw').value.trim();
-  if(!k||!w){alert('지표명과 이름을 입력해주세요.');return;}
-  document.getElementById('mdl').innerHTML='<h3>수정 확인</h3><p style="font-size:11px;color:var(--tx3)">아래 내용으로 수정하시겠습니까?</p><div class="cbox"><div class="ck">'+esc(k)+'</div><div class="cd">'+esc(desc)+'</div><div class="cd" style="font-family:monospace;font-size:10px;color:var(--tx3)">'+esc(formula)+'</div><div class="cd"><span class="tc tc-'+cy+'" style="display:inline-block">'+cy+'</span></div></div><div class="mbtns"><button class="cc" onclick="oe(\''+esc(l1)+'\',\''+esc(l2)+'\','+i+',\''+lv+'\')">← 돌아가기</button><button class="ok" onclick="de(\''+esc(l1)+'\',\''+esc(l2)+'\','+i+',\''+lv+'\')">확인</button></div>';
+  if(!k||!w){alert('지표명과 요청자를 입력해주세요.');return;}
+  document.getElementById('mdl').innerHTML='<h3>수정 요청 확인</h3><p style="font-size:11px;color:var(--tx3)">아래 내용으로 수정 요청하시겠습니까?</p>'+REVIEW_NOTICE+'<div class="cbox"><div class="ck">'+esc(k)+'</div><div class="cd">'+esc(desc)+'</div><div class="cd" style="font-family:monospace;font-size:10px;color:var(--tx3)">'+esc(formula)+'</div><div class="cd"><span class="tc tc-'+cy+'" style="display:inline-block">'+cy+'</span></div></div><div class="mbtns"><button class="cc" onclick="oe(\''+esc(l1)+'\',\''+esc(l2)+'\','+i+',\''+lv+'\')">← 돌아가기</button><button class="ok" onclick="de(\''+esc(l1)+'\',\''+esc(l2)+'\','+i+',\''+lv+'\')">요청 제출</button></div>';
   window._et={k,desc,formula,cy,w};
 }
 function de(l1,l2,i,lv){
   const{k,desc,formula,cy,w}=window._et;
-  const h=lv.toUpperCase()+' KPI 수정';
-  if(lv==='l1')L1K[l1][i]={k,desc,formula,cy,w,h};else D[l1][l2][i]={k,desc,formula,cy,w,h};
-  cm();um();render();sync();
+  const orig=window._editOrig||{};
+  // 변경 사항 비교
+  const diffs=[];
+  if(orig.k!==k)diffs.push('지표명: '+orig.k+' → '+k);
+  if(orig.desc!==desc)diffs.push('설명 변경');
+  if(orig.formula!==formula)diffs.push('산식 변경');
+  if(orig.cy!==cy)diffs.push('주기: '+orig.cy+' → '+cy);
+  const content='[기존 KPI] '+orig.k+'\n[수정 후 지표명] '+k+'\n[수정 후 설명] '+desc+'\n[수정 후 산식] '+formula+'\n[수정 후 주기] '+cy+'\n[변경 요약] '+(diffs.join(' / ')||'(변경 없음)');
+  submitReview({reqType:'수정', l1:l1, l2Name:(lv==='l1'?'':l2), kpiName:orig.k||k, content:content, requester:w});
 }
 
 function od(l1,l2,i,lv){
   const m=lv==='l1'?L1K[l1][i]:D[l1][l2][i];
   const tgt=lv==='l1'?esc(l1):esc(l1)+' → '+esc(l2);
-  document.getElementById('mdl').innerHTML='<h3>KPI 삭제</h3><p style="font-size:11px;color:var(--tx3)">아래 KPI를 삭제하시겠습니까?</p><div class="cbox"><div class="ck">'+esc(m.k)+'</div><div class="cd">'+esc(m.desc)+'</div><div class="cd" style="color:var(--tx3)">'+tgt+'</div></div><label>이름 *</label><input id="mw" placeholder="이름"><div class="mbtns"><button class="cc" onclick="cm()">취소</button><button class="danger" onclick="dd(\''+esc(l1)+'\',\''+esc(l2)+'\','+i+',\''+lv+'\')">삭제</button></div>';
+  document.getElementById('mdl').innerHTML='<h3>KPI 삭제 요청</h3><p style="font-size:11px;color:var(--tx3)">아래 KPI를 삭제 요청하시겠습니까?</p>'+REVIEW_NOTICE+'<div class="cbox"><div class="ck">'+esc(m.k)+'</div><div class="cd">'+esc(m.desc)+'</div><div class="cd" style="color:var(--tx3)">'+tgt+'</div></div><label>삭제 사유 (선택)</label><textarea id="mr" placeholder="예: 다른 KPI와 중복" style="min-height:40px"></textarea><label>요청자 *</label><input id="mw" placeholder="요청자 이름"><div class="mbtns"><button class="cc" onclick="cm()">취소</button><button class="danger" onclick="dd(\''+esc(l1)+'\',\''+esc(l2)+'\','+i+',\''+lv+'\')">삭제 요청</button></div>';
   document.getElementById('mbg').classList.add('show');
 }
 function dd(l1,l2,i,lv){
   const w=document.getElementById('mw').value.trim();
-  if(!w){alert('이름을 입력해주세요.');return;}
-  // 삭제 대상 데이터를 _DEL에 보관 (soft delete)
+  const reason=document.getElementById('mr').value.trim();
+  if(!w){alert('요청자를 입력해주세요.');return;}
   const m=lv==='l1'?L1K[l1][i]:D[l1][l2][i];
-  _DEL.push([l1, lv==='l1'?'':l2, m.k, m.desc, m.formula, m.cy, m.w||'', m.h||'', 'Y', w]);
-  console.log('[soft delete] '+m.k+' → 삭제자: '+w+' (총 보관: '+_DEL.length+'건)');
-  // 화면 데이터에서 제거
-  if(lv==='l1'){L1K[l1].splice(i,1);if(!L1K[l1].length)delete L1K[l1];}
-  else{D[l1][l2].splice(i,1);if(!D[l1][l2].length)delete D[l1][l2];if(D[l1]&&!Object.keys(D[l1]).length)delete D[l1];}
-  cm();um();render();sync();
+  const content='[대상 KPI] '+m.k+'\n[설명] '+m.desc+'\n[산식] '+m.formula+'\n[주기] '+m.cy+'\n[삭제 사유] '+(reason||'(없음)');
+  submitReview({reqType:'삭제', l1:l1, l2Name:(lv==='l1'?'':l2), kpiName:m.k, content:content, requester:w});
 }
 
 function oal2(l1){
-  document.getElementById('mdl').innerHTML='<h3>L2 액티비티 추가</h3><div class="msub"><span class="tag tag-l1">L1</span> '+esc(l1)+'</div><label>L2 액티비티명 *</label><input id="ml2" placeholder="예: 로밍 서비스 이용"><label>첫 번째 KPI 지표명 *</label><input id="mk" placeholder="예: 로밍 데이터 사용량"><label>KPI 설명</label><textarea id="md" placeholder="지표 설명"></textarea><label>산식/정의 (예시)</label><textarea id="mf" placeholder="예: 사용량 / 전체 × 100"></textarea><label>측정주기</label><select id="mc"><option>일간</option><option selected>월간</option><option>분기</option></select><label>이름 *</label><input id="mw" placeholder="이름"><div class="mbtns"><button class="cc" onclick="cm()">취소</button><button class="ok" onclick="dal2(\''+esc(l1)+'\')">추가</button></div>';
+  document.getElementById('mdl').innerHTML='<h3>L2 액티비티 + KPI 추가 요청</h3><div class="msub"><span class="tag tag-l1">L1</span> '+esc(l1)+'</div>'+REVIEW_NOTICE+'<label>L2 액티비티명 *</label><input id="ml2" placeholder="예: 로밍 서비스 이용"><label>첫 번째 KPI 지표명 *</label><input id="mk" placeholder="예: 로밍 데이터 사용량"><label>KPI 설명</label><textarea id="md" placeholder="지표 설명"></textarea><label>산식/정의 (예시)</label><textarea id="mf" placeholder="예: 사용량 / 전체 × 100"></textarea><label>측정주기</label><select id="mc"><option>일간</option><option selected>월간</option><option>분기</option></select><label>요청자 *</label><input id="mw" placeholder="요청자 이름"><div class="mbtns"><button class="cc" onclick="cm()">취소</button><button class="ok" onclick="dal2(\''+esc(l1)+'\')">요청 제출</button></div>';
   document.getElementById('mbg').classList.add('show');setTimeout(()=>document.getElementById('ml2').focus(),80);
 }
 function dal2(l1){
   const l2=document.getElementById('ml2').value.trim(),k=document.getElementById('mk').value.trim(),desc=document.getElementById('md').value.trim(),formula=document.getElementById('mf').value.trim(),cy=document.getElementById('mc').value,w=document.getElementById('mw').value.trim();
-  if(!l2||!k||!w){alert('L2명, KPI 지표명, 이름을 입력해주세요.');return;}
-  if(!D[l1])D[l1]={};if(D[l1][l2]){alert('이미 존재하는 L2입니다.');return;}
-  const h='L2 액티비티 및 KPI 추가';
-  D[l1][l2]=[{k,desc,formula,cy,w,h}];
-  // 새로 추가한 L2는 자동으로 열린 상태로 렌더링되도록 미리 표식
-  cm();um();
-  // render() 직전에 _newL2 추적용 임시 DOM을 만들 수는 없으니, render 후 직접 펼침
-  render();
-  // 새 L2 카드 찾아서 열기
-  document.querySelectorAll('.l2-card').forEach(c=>{
-    const nm=c.querySelector('.l2-nm');
-    if(nm && nm.textContent.trim().replace(/^L2/,'').trim()===l2){
-      c.classList.add('open');
-    }
-  });
-  sync();
+  if(!l2||!k||!w){alert('L2명, KPI 지표명, 요청자를 입력해주세요.');return;}
+  const content='[신규 L2 액티비티] '+l2+'\n[KPI 지표명] '+k+'\n[설명] '+desc+'\n[산식] '+formula+'\n[주기] '+cy;
+  submitReview({reqType:'추가', l1:l1, l2Name:l2, kpiName:k, content:content, requester:w, addL2:true});
 }
 
 // ============================================================
@@ -355,13 +328,12 @@ function loadFromSheet(){
         render();
         toast('시트에서 '+res.count+'건 불러옴','ok');
       } else if(res.status==='ok' && (!res.kpi || res.kpi.length===0)){
-        // 시트는 정상 연결되었지만 데이터가 비어있음 - 시드 데이터로 초기화 후 시트에 저장
-        console.warn('[loadFromSheet] 시트가 비어있음. 시드 데이터를 시트에 저장합니다.');
+        // 시트는 정상 연결되었지만 데이터가 비어있음 - 화면만 시드 표시 (시트 변경 X)
+        console.warn('[loadFromSheet] 시트가 비어있음. 시드 데이터 화면 표시만 (시트 변경 X).');
         proc(E);
-        _loadedFromSheet=true;
+        _loadedFromSheet=false;  // 시드는 fallback 상태
         render();
-        toast('시트가 비어있어 기본 데이터로 초기화합니다','ok');
-        sync();
+        toast('시트가 비어있음. 화면은 기본 데이터 (시트에 저장 안 됨)','err');
       } else {
         throw new Error('서버 응답 오류: '+(res.message||'알 수 없음'));
       }
@@ -382,50 +354,32 @@ function reload(){
   loadFromSheet();
 }
 
-// 시트에 저장 (sync)
-function sync(){
-  // 시트 연동 실패 상태에서는 fallback 데이터로 시트 덮어쓰기 위험 → sync 차단
+// KPI 추가/수정/삭제 요청 제출 (submitReview)
+// → KPI_검토_요청 시트에 1건 추가됨. KPI Manager는 관리자 검토 후 반영.
+function submitReview(payload){
   if(!_loadedFromSheet){
-    console.warn('[sync] 시트 미연동 상태 - sync 차단');
-    toast('⚠️ 시트 미연동 상태 - 저장하지 않음. 새로고침 후 다시 시도하세요.','err');
+    console.warn('[submitReview] 시트 미연동 상태 - 요청 제출 차단');
+    toast('⚠️ 시트 미연동 상태 - 요청 제출 안 됨. 새로고침 후 다시 시도하세요.','err');
     return;
   }
-  const payload={action:'sync',data:toR()};
-  console.log('[sync] 전송:', payload.data.length+'행 (활성+삭제보관 포함)');
-  
+  const body=Object.assign({action:'submitReview'},payload);
+  console.log('[submitReview] 전송:',body);
+
   // text/plain으로 보내야 CORS preflight 회피 가능
   fetch(API,{
     method:'POST',
-    mode:'no-cors',  // Apps Script는 CORS 헤더 미지원, no-cors 필수
+    mode:'no-cors',
     headers:{'Content-Type':'text/plain;charset=utf-8'},
-    body:JSON.stringify(payload)
+    body:JSON.stringify(body)
   })
     .then(()=>{
-      // no-cors 모드에서는 응답 본문을 읽을 수 없음
-      // 실제 저장 여부는 GET으로 재확인하여 검증
-      console.log('[sync] 요청 전송 완료. 5초 후 자동 검증...');
-      toast('저장 요청 전송 완료 (검증 중...)','ok');
-      
-      // 3초 후 JSONP로 실제 저장되었는지 검증
-      setTimeout(()=>{
-        jsonpGet(API)
-          .then(res=>{
-            if(res.status==='ok' && res.count===payload.data.length){
-              console.log('[sync] 검증 성공: 시트에 '+res.count+'행 확인');
-              toast('✓ 저장 확인 완료 ('+res.count+'행)','ok');
-            } else {
-              console.warn('[sync] 검증 불일치 - 보낸 행:'+payload.data.length+', 시트:'+(res.count||'?'));
-              toast('⚠️ 저장 검증 실패 - 시트를 확인해주세요','err');
-            }
-          })
-          .catch(err=>{
-            console.error('[sync] 검증 실패:',err);
-          });
-      },3000);
+      console.log('[submitReview] 요청 전송 완료');
+      cm();  // 모달 닫기
+      toast('✓ 요청이 접수되었습니다. 관리자 검토 후 반영됩니다.','ok');
     })
     .catch(err=>{
-      console.error('[sync] 전송 실패:',err);
-      toast('❌ 저장 실패: '+err.message,'err');
+      console.error('[submitReview] 전송 실패:',err);
+      toast('❌ 요청 전송 실패: '+err.message,'err');
     });
 }
 
