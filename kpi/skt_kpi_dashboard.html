@@ -59,12 +59,7 @@ body{font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;background:var(--
 .tc{font-size:10px;font-weight:600;display:block;padding:2px 7px;border-radius:3px;text-align:center;white-space:nowrap;line-height:1.4}
 .tc-일간{background:var(--gnL);color:var(--gn)}.tc-월간{background:var(--acL);color:var(--ac)}.tc-분기{background:var(--ppL);color:var(--pp)}
 .tc-일간\/월간{background:#FFF7ED;color:#C2410C}
-.src-tag{display:inline-block;font-size:10px;font-weight:600;padding:2px 6px;border-radius:3px;line-height:1.4;cursor:default;white-space:nowrap}
-.src-field{background:#FEF3C7;color:#92400E}
-.src-nova{background:#E0E7FF;color:#3730A3}
-.src-general{background:#DCFCE7;color:#166534}
-.src-legacy{background:#F1F5F9;color:#475569}
-.src-other{background:#F3F4F6;color:#6B7280}
+.src-tag{display:inline-block;font-size:10px;font-weight:500;padding:2px 6px;border-radius:3px;line-height:1.4;background:#F3F4F6;color:#6B7280;white-space:nowrap}
 .act-btns{display:flex;gap:3px;opacity:0;transition:.1s}
 .kt tr:hover .act-btns{opacity:1}
 .act-btn{border:1px solid var(--g3);border-radius:4px;cursor:pointer;font-size:11px;padding:3px 10px;background:var(--wh);color:var(--tx2);font-family:'Pretendard',sans-serif;font-weight:500;transition:.1s;white-space:nowrap}
@@ -167,21 +162,15 @@ function um(){
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 const svgC='<svg class="l2-chv" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>';
 
-// 출처 → 짧은 표시명·CSS 클래스 매핑
+// 출처 → 동일 회색 태그 (시트 명칭 그대로)
 function srcBadge(src){
   if(!src) return '';
   const s=String(src).trim();
-  let label='', cls='';
-  if(s==='현업 의견')       { label='현업';   cls='src-field'; }
-  else if(s==='NOVA SBF KPI'){ label='NOVA';   cls='src-nova'; }
-  else if(s==='General KPI (AI작성)'){ label='General'; cls='src-general'; }
-  else if(s.indexOf('기존')===0){ label='기존'; cls='src-legacy'; }
-  else { label=s.substring(0,8); cls='src-other'; }
-  return '<span class="src-tag '+cls+'" title="'+esc(s)+'">'+label+'</span>';
+  return '<span class="src-tag">'+esc(s)+'</span>';
 }
 
 function kt(items,l1,l2,lv){
-  let h='<table class="kt"><thead><tr><th style="width:18%">KPI 지표명</th><th style="width:28%">KPI 설명</th><th>산식/정의</th><th style="width:44px">주기</th><th style="width:62px">출처</th><th style="width:90px"></th></tr></thead><tbody>';
+  let h='<table class="kt"><thead><tr><th style="width:18%">KPI 지표명</th><th style="width:26%">KPI 설명</th><th>산식/정의</th><th style="width:44px">주기</th><th style="width:120px">출처</th><th style="width:90px"></th></tr></thead><tbody>';
   items.forEach((m,i)=>{
     h+='<tr><td class="kpi-name">'+esc(m.k)+'</td><td class="kpi-desc">'+esc(m.desc)+'</td><td class="kpi-formula">'+esc(m.formula)+'</td><td><span class="tc tc-'+m.cy+'">'+m.cy+'</span></td><td>'+srcBadge(m.src)+'</td><td><div class="act-btns"><button class="act-btn" onclick="event.stopPropagation();oe(\''+esc(l1)+'\',\''+esc(l2)+'\','+i+',\''+lv+'\')">수정</button><button class="act-btn del" onclick="event.stopPropagation();od(\''+esc(l1)+'\',\''+esc(l2)+'\','+i+',\''+lv+'\')">삭제</button></div></td></tr>';
   });
