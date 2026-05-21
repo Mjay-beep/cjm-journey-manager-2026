@@ -1,15 +1,21 @@
 // ============================================================
-// SKT 고객여정 KPI Dashboard — Google Apps Script (v7)
+// SKT 고객여정 KPI Dashboard — Google Apps Script (v8)
 // ============================================================
-// v6 대비 변경 (2026-05-20):
+// v7 대비 변경 (2026-05-21):
+// - NUM_COLS 10 → 11로 확장: K열 "출처" 추가
+//   (출처 종류: ① 현업 의견 ② NOVA SBF KPI ③ General KPI(AI작성) ④ 기존(박민재 임의))
+// - COL_LABELS / COL 매핑에 SOURCE 추가
+// - sync diff 비교에 SOURCE 포함
+//
+// v7 (2026-05-20):
 // - KPI_변경이력 탭 도입 (append-only audit log)
 // - onEdit 트리거: 시트 직접 편집 시 자동 로깅
 // - sync 액션이 덮어쓰기 전에 diff 계산하여 변경이력에 자동 기록
 // - doPost 새 액션: applyChanges (외부 호출로 일괄 반영 + 사유 포함)
 // - initKpiHistoryTab(): 변경이력 탭 헤더 1회 생성용
 //
-// 시트 컬럼 (10열): A:L1, B:L2, C:KPI지표명, D:KPI설명, E:산식/정의,
-//                 F:측정주기, G:수정한 사람, H:수정 내용, I:삭제여부, J:삭제한 사람
+// 시트 컬럼 (11열): A:L1, B:L2, C:KPI지표명, D:KPI설명, E:산식/정의,
+//                 F:측정주기, G:수정한 사람, H:수정 내용, I:삭제여부, J:삭제한 사람, K:출처
 //
 // 연결된 웹 엔드포인트:
 //   https://script.google.com/macros/s/AKfycbwckTK8mJb1nf3ZZ1rPG7114DJJzgu0T93wdQi4S6LpvHf3MqqIlnxxa7zuk7b33RJyVA/exec
@@ -18,11 +24,12 @@
 var SSID = '1sD604FpRUbi8mkT00DJxK3ErujIyhaxYzL302nuD7_A';
 var KPI_TAB = '여정별 KPI Manager';
 var HISTORY_TAB = 'KPI_변경이력';
-var NUM_COLS = 10;
+var REVIEW_TAB = 'KPI_검토_요청';
+var NUM_COLS = 11;
 
 // KPI 컬럼 인덱스 (0-based)
-var COL = { L1:0, L2:1, NAME:2, DESC:3, FORMULA:4, CYCLE:5, EDITOR:6, EDIT_NOTE:7, DELETED:8, DELETED_BY:9 };
-var COL_LABELS = ['L1','L2','KPI 지표명','KPI 설명','산식/정의','측정주기','수정한 사람','수정 내용','삭제여부','삭제한 사람'];
+var COL = { L1:0, L2:1, NAME:2, DESC:3, FORMULA:4, CYCLE:5, EDITOR:6, EDIT_NOTE:7, DELETED:8, DELETED_BY:9, SOURCE:10 };
+var COL_LABELS = ['L1','L2','KPI 지표명','KPI 설명','산식/정의','측정주기','수정한 사람','수정 내용','삭제여부','삭제한 사람','출처'];
 
 function _getSheet() {
   var ss = SpreadsheetApp.openById(SSID);
@@ -196,7 +203,7 @@ function _computeAndLogDiff(prevRows, nextRows, defaultEditor, defaultReason) {
     }
 
     // 기존 행 — 컬럼별 비교 (메타 컬럼 G/H는 비교 대상에서 제외하되 변경자/사유 출처로 사용)
-    var fieldsToCompare = [COL.L1, COL.L2, COL.NAME, COL.DESC, COL.FORMULA, COL.CYCLE, COL.DELETED, COL.DELETED_BY];
+    var fieldsToCompare = [COL.L1, COL.L2, COL.NAME, COL.DESC, COL.FORMULA, COL.CYCLE, COL.DELETED, COL.DELETED_BY, COL.SOURCE];
     var anyChange = false;
     for (var fi = 0; fi < fieldsToCompare.length; fi++) {
       var idx = fieldsToCompare[fi];
