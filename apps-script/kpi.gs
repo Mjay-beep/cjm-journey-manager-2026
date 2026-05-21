@@ -1,21 +1,16 @@
 // ============================================================
-// SKT 고객여정 KPI Dashboard — Google Apps Script (v8)
+// SKT 고객여정 KPI Dashboard — Google Apps Script (v9)
 // ============================================================
-// v7 대비 변경 (2026-05-21):
-// - NUM_COLS 10 → 11로 확장: K열 "출처" 추가
-//   (출처 종류: ① 현업 의견 ② NOVA SBF KPI ③ General KPI(AI작성) ④ 기존(박민재 임의))
-// - COL_LABELS / COL 매핑에 SOURCE 추가
-// - sync diff 비교에 SOURCE 포함
+// v8 대비 변경 (2026-05-21):
+// - NUM_COLS 11 → 7로 축소: 수정한 사람/수정 내용/삭제여부/삭제한 사람 4컬럼 제거
+// - 출처 컬럼이 G로 이동 (기존 K)
+// - softDelete/restore 액션 제거 (시트에 컬럼 없음)
+// - 신규 액션 submitReview: KPI 대시보드에서 추가/수정/삭제 요청을 KPI_검토_요청 시트에 접수
 //
-// v7 (2026-05-20):
-// - KPI_변경이력 탭 도입 (append-only audit log)
-// - onEdit 트리거: 시트 직접 편집 시 자동 로깅
-// - sync 액션이 덮어쓰기 전에 diff 계산하여 변경이력에 자동 기록
-// - doPost 새 액션: applyChanges (외부 호출로 일괄 반영 + 사유 포함)
-// - initKpiHistoryTab(): 변경이력 탭 헤더 1회 생성용
+// v8 (2026-05-21): K열 "출처" 추가
+// v7 (2026-05-20): KPI_변경이력 / onEdit / applyChanges / sync diff
 //
-// 시트 컬럼 (11열): A:L1, B:L2, C:KPI지표명, D:KPI설명, E:산식/정의,
-//                 F:측정주기, G:수정한 사람, H:수정 내용, I:삭제여부, J:삭제한 사람, K:출처
+// 시트 컬럼 (7열): A:L1, B:L2, C:KPI지표명, D:KPI설명, E:산식/정의, F:측정주기, G:출처
 //
 // 연결된 웹 엔드포인트:
 //   https://script.google.com/macros/s/AKfycbwckTK8mJb1nf3ZZ1rPG7114DJJzgu0T93wdQi4S6LpvHf3MqqIlnxxa7zuk7b33RJyVA/exec
@@ -25,11 +20,11 @@ var SSID = '1sD604FpRUbi8mkT00DJxK3ErujIyhaxYzL302nuD7_A';
 var KPI_TAB = '여정별 KPI Manager';
 var HISTORY_TAB = 'KPI_변경이력';
 var REVIEW_TAB = 'KPI_검토_요청';
-var NUM_COLS = 11;
+var NUM_COLS = 7;
 
 // KPI 컬럼 인덱스 (0-based)
-var COL = { L1:0, L2:1, NAME:2, DESC:3, FORMULA:4, CYCLE:5, EDITOR:6, EDIT_NOTE:7, DELETED:8, DELETED_BY:9, SOURCE:10 };
-var COL_LABELS = ['L1','L2','KPI 지표명','KPI 설명','산식/정의','측정주기','수정한 사람','수정 내용','삭제여부','삭제한 사람','출처'];
+var COL = { L1:0, L2:1, NAME:2, DESC:3, FORMULA:4, CYCLE:5, SOURCE:6 };
+var COL_LABELS = ['L1','L2','KPI 지표명','KPI 설명','산식/정의','측정주기','출처'];
 
 function _getSheet() {
   var ss = SpreadsheetApp.openById(SSID);
@@ -44,6 +39,11 @@ function _getSheet() {
 function _getHistorySheet() {
   var ss = SpreadsheetApp.openById(SSID);
   return ss.getSheetByName(HISTORY_TAB);
+}
+
+function _getReviewSheet() {
+  var ss = SpreadsheetApp.openById(SSID);
+  return ss.getSheetByName(REVIEW_TAB);
 }
 
 // ============================================================
@@ -79,7 +79,7 @@ function doGet(e) {
 }
 
 // ============================================================
-// POST
+// POST 라우터
 // ============================================================
 function doPost(e) {
   try {
@@ -95,6 +95,10 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
+    // 신규: 대시보드에서 KPI 추가/수정/삭제 요청 접수
+    if (body.action === 'submitReview') {
+      return _submitReview(body);
+    }
     if (body.action === 'sync' && body.data) {
       return _syncWithDiff(body);
     }
@@ -112,7 +116,73 @@ function doPost(e) {
 }
 
 // ────────────────────────────────────────────────────────────
-// sync — 기존 동작 유지 + diff 자동 로깅
+// submitReview — KPI 대시보드에서 추가/수정/삭제 요청 접수
+// ────────────────────────────────────────────────────────────
+// body 예:
+// {
+//   "action": "submitReview",
+//   "reqType": "추가" | "수정" | "삭제",
+//   "l1": "서비스 이용",
+//   "l2Code": "use_info",
+//   "l2Name": "나의 가입정보 관리",
+//   "kpiName": "약정 만료 후 재약정 전환율",
+//   "content": "[산식] ... [정의] ... [기타] ...",
+//   "requester": "홍길동"
+// }
+function _submitReview(body) {
+  var rs = _getReviewSheet();
+  if (!rs) {
+    return ContentService.createTextOutput(JSON.stringify({
+      status: 'error',
+      message: 'KPI_검토_요청 탭을 찾을 수 없음'
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  // 요청 ID 자동 채번 (KPI_REQ_NNN)
+  var lr = rs.getLastRow();
+  var nextNum = 1;
+  if (lr > 1) {
+    for (var i = lr; i >= 2; i--) {
+      var cellVal = String(rs.getRange(i, 1).getValue());
+      var match = cellVal.match(/KPI_REQ_(\d+)/);
+      if (match) {
+        nextNum = parseInt(match[1]) + 1;
+        break;
+      }
+    }
+  }
+  var reqId = 'KPI_REQ_' + ('00' + nextNum).slice(-3);
+
+  var now = Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss');
+
+  // KPI_검토_요청 컬럼 (11열):
+  // A:요청ID, B:요청유형, C:L1, D:L2 Code, E:L2 Name, F:대상 KPI 지표명,
+  // G:요청 내용, H:요청자, I:요청 일시, J:처리 상태, K:관리자 메모
+  var newRow = [
+    reqId,
+    body.reqType || '추가',
+    body.l1 || '',
+    body.l2Code || '',
+    body.l2Name || '',
+    body.kpiName || '',
+    body.content || '',
+    body.requester || '',
+    now,
+    '대기',
+    ''
+  ];
+
+  rs.appendRow(newRow);
+
+  return ContentService.createTextOutput(JSON.stringify({
+    status: 'ok',
+    reqId: reqId,
+    message: '요청이 접수되었습니다.'
+  })).setMimeType(ContentService.MimeType.JSON);
+}
+
+// ────────────────────────────────────────────────────────────
+// sync — 기존 동작 유지 + diff 자동 로깅 (7열로 축소)
 // ────────────────────────────────────────────────────────────
 function _syncWithDiff(body) {
   var ks = _getSheet();
@@ -128,7 +198,7 @@ function _syncWithDiff(body) {
     prevRows = ks.getRange(2, 1, lr - 1, NUM_COLS).getValues();
   }
 
-  // 2) 데이터 정규화 (10열 패딩)
+  // 2) 데이터 정규화 (7열 패딩)
   var padded = data.map(function(r) {
     if (!Array.isArray(r)) r = [];
     while (r.length < NUM_COLS) r.push('');
@@ -164,11 +234,9 @@ function _syncWithDiff(body) {
   })).setMimeType(ContentService.MimeType.JSON);
 }
 
-// prev/next 둘 다 10열 배열의 배열. 키: (L1, L2, KPI지표명) — 단, 중복 시 첫 매치 우선.
-// 차이를 변경이력 행으로 append.
+// prev/next 둘 다 7열 배열의 배열. 키: (L1, L2, KPI지표명).
 function _computeAndLogDiff(prevRows, nextRows, defaultEditor, defaultReason) {
   function key(r) { return [r[COL.L1], r[COL.L2], r[COL.NAME]].join('::'); }
-  function isDeleted(r) { return String(r[COL.DELETED]).toUpperCase() === 'Y'; }
 
   var prevMap = {};
   for (var i = 0; i < prevRows.length; i++) {
@@ -187,72 +255,58 @@ function _computeAndLogDiff(prevRows, nextRows, defaultEditor, defaultReason) {
   for (var nk in nextMap) {
     var nr = nextMap[nk];
     var pr = prevMap[nk];
-    var editor = String(nr[COL.EDITOR] || defaultEditor);
-    var note = String(nr[COL.EDIT_NOTE] || '');
+    var editor = defaultEditor;
 
     if (!pr) {
-      // 신규 행
       logs.push(_kpiLogEntry({
         editor: editor,
-        type: isDeleted(nr) ? '삭제' : '추가',
+        type: '추가',
         l1: nr[COL.L1], l2: nr[COL.L2], name: nr[COL.NAME],
         field: '', oldValue: '', newValue: _summarize(nr),
-        reason: note || defaultReason
+        reason: defaultReason
       }));
       continue;
     }
 
-    // 기존 행 — 컬럼별 비교 (메타 컬럼 G/H는 비교 대상에서 제외하되 변경자/사유 출처로 사용)
-    var fieldsToCompare = [COL.L1, COL.L2, COL.NAME, COL.DESC, COL.FORMULA, COL.CYCLE, COL.DELETED, COL.DELETED_BY, COL.SOURCE];
-    var anyChange = false;
+    // 비교: L1, L2, NAME, DESC, FORMULA, CYCLE, SOURCE
+    var fieldsToCompare = [COL.L1, COL.L2, COL.NAME, COL.DESC, COL.FORMULA, COL.CYCLE, COL.SOURCE];
     for (var fi = 0; fi < fieldsToCompare.length; fi++) {
       var idx = fieldsToCompare[fi];
       var oldV = String(pr[idx] == null ? '' : pr[idx]);
       var newV = String(nr[idx] == null ? '' : nr[idx]);
       if (oldV !== newV) {
-        anyChange = true;
-        var type = '수정';
-        if (idx === COL.DELETED) {
-          if (newV.toUpperCase() === 'Y' && oldV.toUpperCase() !== 'Y') type = '삭제';
-          else if (newV.toUpperCase() !== 'Y' && oldV.toUpperCase() === 'Y') type = '복구';
-        }
         logs.push(_kpiLogEntry({
           editor: editor,
-          type: type,
+          type: '수정',
           l1: nr[COL.L1], l2: nr[COL.L2], name: nr[COL.NAME],
           field: COL_LABELS[idx],
           oldValue: oldV, newValue: newV,
-          reason: note || defaultReason
+          reason: defaultReason
         }));
       }
     }
-    if (!anyChange) {
-      // 변경 없음 → 로그 X
-    }
   }
 
-  // 삭제(누락) 검사: prev에 있었는데 next에 없는 키
+  // 삭제(누락) 검사
   for (var pk in prevMap) {
     if (!(pk in nextMap)) {
       var prr = prevMap[pk];
       logs.push(_kpiLogEntry({
         editor: defaultEditor,
-        type: '삭제(누락)',
+        type: '삭제',
         l1: prr[COL.L1], l2: prr[COL.L2], name: prr[COL.NAME],
         field: '', oldValue: _summarize(prr), newValue: '',
-        reason: defaultReason + ' — 동기화 데이터에 누락됨'
+        reason: defaultReason + ' — 동기화 데이터에 누락'
       }));
     }
   }
 
-  // 일괄 append
   if (logs.length === 0) return 0;
   var hs = _getHistorySheet();
   hs.getRange(hs.getLastRow() + 1, 1, logs.length, 10).setValues(logs);
   return logs.length;
 }
 
-// 변경이력 한 행을 10열 배열로 생성
 function _kpiLogEntry(o) {
   var now = Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss');
   return [
@@ -270,45 +324,17 @@ function _kpiLogEntry(o) {
 }
 
 function _summarize(row) {
-  // 신규 행/삭제 행을 한 줄로 요약 (가독성 위해 핵심 필드만)
   var parts = [];
   if (row[COL.DESC]) parts.push('설명=' + String(row[COL.DESC]).substring(0, 60));
   if (row[COL.FORMULA]) parts.push('산식=' + String(row[COL.FORMULA]).substring(0, 60));
   if (row[COL.CYCLE]) parts.push('주기=' + row[COL.CYCLE]);
+  if (row[COL.SOURCE]) parts.push('출처=' + row[COL.SOURCE]);
   return parts.join(' / ');
 }
 
 // ────────────────────────────────────────────────────────────
-// applyChanges — 외부 일괄 호출 (사유 명시)
+// applyChanges — 외부 일괄 호출 (관리자용, 7열 기준)
 // ────────────────────────────────────────────────────────────
-// body 예:
-// {
-//   "action": "applyChanges",
-//   "editor": "홍길동",
-//   "changes": [
-//     {
-//       "op": "addRow",
-//       "row": ["인입","","신규 KPI","설명","산식","월간","홍길동","수동 추가","",""],
-//       "log": { "type":"추가","l1":"인입","l2":"","name":"신규 KPI","field":"","oldValue":"","newValue":"...","reason":"REQ_XXX" }
-//     },
-//     {
-//       "op": "updateRowByKey",
-//       "key": {"l1":"인입","l2":"","name":"전체 인입 전환율 (Acquisition Conversion Rate)"},
-//       "updates": {"산식/정의":"...","측정주기":"주간"},
-//       "log": { ... }
-//     },
-//     {
-//       "op": "softDelete",
-//       "key": {...},
-//       "deletedBy": "홍길동",
-//       "log": { ... }
-//     },
-//     {
-//       "op": "logOnly",
-//       "log": { ... }
-//     }
-//   ]
-// }
 function _applyChanges(body) {
   var ks = _getSheet();
   var hs = _getHistorySheet();
@@ -340,23 +366,16 @@ function _applyChanges(body) {
           if (colIdx < 0) throw new Error('컬럼명 잘못됨: ' + label);
           ks.getRange(r1, colIdx + 1).setValue(updates[label]);
         }
-      } else if (ch.op === 'softDelete') {
+      } else if (ch.op === 'deleteRowByKey') {
         var r2 = _findKpiRowByKey(ks, ch.key);
         if (r2 < 0) throw new Error('대상 행 없음: ' + JSON.stringify(ch.key));
-        ks.getRange(r2, COL.DELETED + 1).setValue('Y');
-        ks.getRange(r2, COL.DELETED_BY + 1).setValue(ch.deletedBy || editor);
-      } else if (ch.op === 'restore') {
-        var r3 = _findKpiRowByKey(ks, ch.key);
-        if (r3 < 0) throw new Error('대상 행 없음: ' + JSON.stringify(ch.key));
-        ks.getRange(r3, COL.DELETED + 1).setValue('');
-        ks.getRange(r3, COL.DELETED_BY + 1).setValue('');
+        ks.deleteRow(r2);
       } else if (ch.op === 'logOnly') {
         // 시트 변경 없음
       } else {
         throw new Error('알 수 없는 op: ' + ch.op);
       }
 
-      // 변경이력 로깅
       if (ch.log) {
         hs.appendRow(_kpiLogEntry({
           editor: editor,
@@ -388,7 +407,7 @@ function _findKpiRowByKey(sheet, key) {
   if (!key) return -1;
   var lr = sheet.getLastRow();
   if (lr < 2) return -1;
-  var vals = sheet.getRange(2, 1, lr - 1, 3).getValues(); // L1, L2, NAME만 검색
+  var vals = sheet.getRange(2, 1, lr - 1, 3).getValues();
   for (var i = 0; i < vals.length; i++) {
     if (String(vals[i][0]) === String(key.l1 || '') &&
         String(vals[i][1]) === String(key.l2 || '') &&
@@ -406,7 +425,7 @@ function initKpiHistoryTab() {
   var ss = SpreadsheetApp.openById(SSID);
   var hs = ss.getSheetByName(HISTORY_TAB);
   if (hs) {
-    Logger.log('⚠️ 이미 존재함: ' + HISTORY_TAB + ' (수정 안 함)');
+    Logger.log('⚠️ 이미 존재함: ' + HISTORY_TAB);
     return;
   }
   hs = ss.insertSheet(HISTORY_TAB);
@@ -415,19 +434,11 @@ function initKpiHistoryTab() {
   ]);
   hs.getRange(1, 1, 1, 10).setFontWeight('bold').setBackground('#f0f0f0');
   hs.setFrozenRows(1);
-  hs.setColumnWidth(1, 150);  // 타임스탬프
-  hs.setColumnWidth(2, 140);  // 변경자
-  hs.setColumnWidth(3, 80);   // 변경유형
-  hs.setColumnWidth(6, 220);  // KPI 지표명
-  hs.setColumnWidth(7, 110);  // 변경 필드
-  hs.setColumnWidth(8, 220);  // 이전값
-  hs.setColumnWidth(9, 220);  // 새값
-  hs.setColumnWidth(10, 160); // 사유
   Logger.log('✅ 생성 완료: ' + HISTORY_TAB);
 }
 
 // ============================================================
-// onEdit: 시트 직접 편집 자동 로깅 (simple trigger)
+// onEdit: 시트 직접 편집 자동 로깅 (7열 기준)
 // ============================================================
 function onEdit(e) {
   try {
@@ -437,7 +448,7 @@ function onEdit(e) {
 
     var row = e.range.getRow();
     var col = e.range.getColumn();
-    if (row < 2) return;                // 헤더 무시
+    if (row < 2) return;
     if (col < 1 || col > NUM_COLS) return;
 
     var oldValue = (e.oldValue === undefined || e.oldValue === null) ? '' : String(e.oldValue);
@@ -448,10 +459,7 @@ function onEdit(e) {
     var field = COL_LABELS[col - 1];
 
     var type = '수정';
-    if (col === COL.DELETED + 1) {
-      if (newValue.toUpperCase() === 'Y') type = '삭제';
-      else if (oldValue.toUpperCase() === 'Y' && newValue === '') type = '복구';
-    } else if (oldValue === '' && newValue !== '') type = '추가';
+    if (oldValue === '' && newValue !== '') type = '추가';
     else if (oldValue !== '' && newValue === '') type = '삭제';
 
     var editor = '';
@@ -461,7 +469,7 @@ function onEdit(e) {
     } catch (_) { editor = '(unknown)'; }
 
     var hs = _getHistorySheet();
-    if (!hs) return; // 탭 없으면 silent
+    if (!hs) return;
 
     hs.appendRow(_kpiLogEntry({
       editor: editor,
@@ -486,38 +494,36 @@ function diagnose() {
     var tabs = ss.getSheets().map(function(s){ return s.getName(); });
     Logger.log('📋 탭 목록: ' + tabs.join(' | '));
     Logger.log('   ' + KPI_TAB + ': ' + (ss.getSheetByName(KPI_TAB) ? '✅' : '❌'));
-    Logger.log('   ' + HISTORY_TAB + ': ' + (ss.getSheetByName(HISTORY_TAB) ? '✅' : '❌ → initKpiHistoryTab() 실행 필요'));
+    Logger.log('   ' + HISTORY_TAB + ': ' + (ss.getSheetByName(HISTORY_TAB) ? '✅' : '❌'));
+    Logger.log('   ' + REVIEW_TAB + ': ' + (ss.getSheetByName(REVIEW_TAB) ? '✅' : '❌'));
     var ks = ss.getSheetByName(KPI_TAB);
     if (ks) {
       var lr = ks.getLastRow();
-      Logger.log('📊 KPI 데이터: ' + Math.max(0, lr - 1) + '행');
-      if (lr > 1) {
-        var allData = ks.getRange(2, 1, lr - 1, NUM_COLS).getValues();
-        var deletedCount = allData.filter(function(r){ return String(r[COL.DELETED]).toUpperCase() === 'Y'; }).length;
-        Logger.log('🗑️ Soft-deleted: ' + deletedCount + '건');
-      }
+      Logger.log('📊 KPI 데이터: ' + Math.max(0, lr - 1) + '행 (' + NUM_COLS + '열 기준)');
     }
   } catch (err) {
     Logger.log('❌ 진단 실패: ' + err.toString());
   }
 }
 
-function testSync() {
+function testSubmitReview() {
   var fakeRequest = {
     parameter: {},
     postData: {
       type: 'application/json',
       contents: JSON.stringify({
-        action: 'sync',
-        editor: '(testSync)',
-        reason: 'testSync 실행',
-        data: [
-          ['테스트L1','테스트L2','테스트 KPI(활성)','설명','산식','월간','테스터','testSync 실행','',''],
-          ['테스트L1','테스트L2','테스트 KPI(삭제됨)','설명','산식','월간','테스터','testSync 실행','Y','홍길동']
-        ]
+        action: 'submitReview',
+        reqType: '추가',
+        l1: '서비스 이용',
+        l2Code: 'use_info',
+        l2Name: '나의 가입정보 관리',
+        kpiName: '(테스트) testSubmitReview KPI',
+        content: '[산식] 테스트 / [정의] testSubmitReview 함수에서 생성',
+        requester: '(테스트)'
       })
     }
   };
   var result = doPost(fakeRequest);
-  Logger.log('testSync 결과: ' + result.getContent());
+  Logger.log('testSubmitReview 결과: ' + result.getContent());
+  Logger.log('→ KPI_검토_요청 탭의 마지막 행 확인. 확인 후 그 행 삭제하세요.');
 }
