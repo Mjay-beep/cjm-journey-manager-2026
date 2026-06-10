@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>CJM × SBF 매핑 뷰어 (PoC)</title>
+<style>
+  :root{--blue:#1565C0;--orange:#E65100;--gray:#424242;--bg:#f5f7fa;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:var(--bg);color:#222;}
+  header{background:linear-gradient(90deg,#0d2d57,#1565C0);color:#fff;padding:14px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+  header h1{font-size:18px;}
+  header .sub{font-size:12px;opacity:.85;}
+  header .badge{background:rgba(255,255,255,.15);border-radius:12px;padding:3px 10px;font-size:12px;}
+  #search{margin-left:auto;padding:6px 12px;border-radius:8px;border:none;width:240px;font-size:13px;}
+  main{display:flex;height:calc(100vh - 60px);}
+  /* 좌측 트리 */
+  #tree{width:380px;min-width:300px;overflow-y:auto;background:#fff;border-right:1px solid #ddd;padding:10px;}
+  .l1{margin-bottom:6px;}
+  .l1>.hd{background:var(--blue);color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px;display:flex;justify-content:space-between;}
+  .l1>.hd .cnt{font-weight:400;font-size:12px;opacity:.8;}
+  .l2{margin:4px 0 4px 10px;}
+  .l2>.hd{font-size:13px;font-weight:600;color:#0d2d57;padding:5px 8px;cursor:pointer;border-radius:6px;}
+  .l2>.hd:hover{background:#eaf2fd;}
+  .l3{font-size:13px;padding:5px 8px 5px 22px;cursor:pointer;border-radius:6px;display:flex;justify-content:space-between;gap:6px;}
+  .l3:hover{background:#eaf2fd;}
+  .l3.active{background:var(--blue);color:#fff;}
+  .l3 .pill{font-size:11px;border-radius:10px;padding:1px 7px;background:#e0e0e0;color:#555;white-space:nowrap;}
+  .l3.active .pill{background:rgba(255,255,255,.25);color:#fff;}
+  .l3 .pill.has{background:#c8e6c9;color:#1b5e20;}
+  .hidden{display:none;}
+  /* 우측 상세 */
+  #detail{flex:1;overflow-y:auto;padding:20px 26px;}
+  .crumb{font-size:13px;color:#666;margin-bottom:6px;}
+  .crumb b{color:var(--blue);}
+  h2{font-size:20px;margin-bottom:10px;}
+  .l4box{background:#fff;border:1px dashed #90a4ae;border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:13px;color:#444;}
+  .l4box b{color:#0d2d57;}
+  .map{background:#fff;border:1px solid #ddd;border-left:6px solid var(--orange);border-radius:10px;margin-bottom:12px;padding:12px 16px;}
+  .map .top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .map .bizid{font-family:monospace;font-size:12px;background:#fff3e0;color:var(--orange);padding:2px 8px;border-radius:6px;font-weight:700;}
+  .map .name{font-weight:700;font-size:15px;}
+  .map .path{font-size:12px;color:#777;}
+  .conf{font-size:12px;font-weight:700;border-radius:10px;padding:2px 10px;color:#fff;}
+  .conf.상{background:#2E7D32;} .conf.중{background:#F9A825;color:#5d4400;} .conf.하{background:#bdbdbd;color:#444;}
+  .why{font-size:12px;color:#666;margin-top:6px;}
+  .scr-toggle{margin-top:8px;font-size:12px;color:var(--blue);cursor:pointer;font-weight:600;}
+  .screens{margin-top:8px;border-top:1px solid #eee;padding-top:8px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:4px;}
+  .scr{font-size:12px;color:#333;background:#f5f5f5;border-radius:6px;padding:4px 8px;}
+  .scr code{color:var(--gray);font-weight:700;margin-right:6px;}
+  .empty{color:#999;font-size:14px;padding:40px;text-align:center;}
+  .note{background:#fffde7;border:1px solid #F9A825;border-radius:10px;padding:10px 14px;font-size:12.5px;margin-bottom:16px;color:#5d4400;}
+</style>
+</head>
+<body>
+<header>
+  <h1>CJM × SBF 매핑 뷰어</h1>
+  <span class="badge">PoC · 자동생성 초안 + 미납 수기검증</span>
+  <span class="sub" id="stats"></span>
+  <input id="search" placeholder="여정/업무/화면 검색 (예: 미납)">
+</header>
+<main>
+  <nav id="tree"></nav>
+  <section id="detail"><div class="empty">왼쪽에서 여정 단계를 선택하세요.<br>(기본 데모: 서비스 이용 → 요금/납부 관리 → 요금 납부)</div></section>
+</main>
+<script>
+const DATA = __DATA__;
+const tree = document.getElementById('tree');
+const detail = document.getElementById('detail');
+let total=0, mapped=0, links=0;
+
+DATA.forEach((l1,i)=>{
+  const d=document.createElement('div'); d.className='l1';
+  const l3all=l1.l2s.flatMap(x=>x.l3s);
+  total+=l3all.length; mapped+=l3all.filter(x=>x.maps.length).length;
+  links+=l3all.reduce((a,x)=>a+x.maps.length,0);
+  d.innerHTML=`<div class="hd"><span>${l1.l1}</span><span class="cnt">${l3all.length}개 활동</span></div>`;
+  const body=document.createElement('div');
+  l1.l2s.forEach(l2=>{
+    const e2=document.createElement('div'); e2.className='l2';
+    e2.innerHTML=`<div class="hd">▸ ${l2.name}</div>`;
+    const wrap=document.createElement('div'); wrap.className='hidden';
+    l2.l3s.forEach(l3=>{
+      const e3=document.createElement('div'); e3.className='l3'; e3.dataset.code=l3.code;
+      const n=l3.maps.length;
+      e3.innerHTML=`<span>${l3.name}</span><span class="pill ${n?'has':''}">${n?'업무 '+n:'갭'}</span>`;
+      e3.onclick=()=>select(l1,l2,l3,e3);
+      wrap.appendChild(e3);
+    });
+    e2.querySelector('.hd').onclick=()=>wrap.classList.toggle('hidden');
+    e2.appendChild(wrap); body.appendChild(e2);
+  });
+  if(i>0) body.classList.add('hidden');
+  d.querySelector('.hd').onclick=()=>body.classList.toggle('hidden');
+  d.appendChild(body); tree.appendChild(d);
+});
+document.getElementById('stats').textContent=
+  `CJM 활동 ${total}개 · 매핑 ${mapped}개 (${Math.round(mapped/total*100)}%) · 연결 ${links}건`;
+
+function select(l1,l2,l3,el){
+  document.querySelectorAll('.l3.active').forEach(x=>x.classList.remove('active'));
+  if(el) el.classList.add('active');
+  let h=`<div class="crumb">${l1.l1} &gt; ${l2.name} &gt; <b>${l3.name}</b> <code style="color:#999">(${l3.code})</code></div>`;
+  h+=`<h2>${l3.name}</h2>`;
+  if(l3.l4s.length) h+=`<div class="l4box"><b>고객 세부 행동 (L4):</b> ${l3.l4s.join(' · ')}</div>`;
+  if(!l3.maps.length){ h+=`<div class="note">⚠ 매핑된 SBF 업무가 없습니다 (갭). 검수/논의 대상입니다.</div>`; }
+  l3.maps.forEach((m,idx)=>{
+    h+=`<div class="map">
+      <div class="top"><span class="bizid">${m.biz_id}</span><span class="name">${m.d3}</span><span class="conf ${m.conf}">${m.conf}</span></div>
+      <div class="path">SBF: ${m.d1} &gt; ${m.d2} &gt; ${m.d3}</div>
+      <div class="why">근거: ${m.why}</div>`;
+    if(m.screens.length){
+      h+=`<div class="scr-toggle" onclick="this.nextElementSibling.classList.toggle('hidden')">▾ BSS 화면 ${m.screens.length}개 보기</div>
+      <div class="screens hidden">${m.screens.map(s=>`<div class="scr"><code>${s.pgm}</code>${s.name}</div>`).join('')}</div>`;
+    } else { h+=`<div class="why" style="color:#bbb">연결된 BSS 화면 정보 없음</div>`; }
+    h+=`</div>`;
+  });
+  detail.innerHTML=h;
+  detail.scrollTop=0;
+}
+
+/* 검색 */
+document.getElementById('search').addEventListener('input',e=>{
+  const q=e.target.value.trim().toLowerCase();
+  document.querySelectorAll('#tree .l3').forEach(el=>{
+    if(!q){el.style.display='';return;}
+    const code=el.dataset.code;
+    let hit=false;
+    DATA.forEach(l1=>l1.l2s.forEach(l2=>l2.l3s.forEach(l3=>{
+      if(l3.code!==code) return;
+      const hay=(l1.l1+l2.name+l3.name+l3.l4s.join('')+l3.maps.map(m=>m.biz_id+m.d1+m.d2+m.d3+m.screens.map(s=>s.pgm+s.name).join('')).join('')).toLowerCase();
+      hit=hay.includes(q);
+    })));
+    el.style.display=hit?'':'none';
+  });
+  if(q) document.querySelectorAll('#tree .hidden').forEach(x=>x.classList.remove('hidden'));
+});
+
+/* 기본 데모: 미납 쇼케이스 (요금 납부) */
+(function(){
+  for(const l1 of DATA) for(const l2 of l1.l2s) for(const l3 of l2.l3s)
+    if(l3.code==='use_pay_do'){
+      const el=document.querySelector(`.l3[data-code="use_pay_do"]`);
+      if(el){ let p=el.parentElement; while(p&&p.id!=='tree'){p.classList.remove('hidden');p=p.parentElement;} }
+      select(l1,l2,l3,el); return;
+    }
+})();
+</script>
+</body>
+</html>
