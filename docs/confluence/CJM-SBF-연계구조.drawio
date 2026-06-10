@@ -1,0 +1,115 @@
+<mxfile host="app.diagrams.net" version="24.0.0">
+  <diagram name="① 전체 연계 구조" id="page-overview">
+    <mxGraphModel dx="1000" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="826" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="CJM ↔ SBF ↔ BSS 전체 연계 구조" style="text;html=1;fontSize=20;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="1080" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="h_cjm" value="CJM (고객 관점)&#10;무엇을 경험 / 하려는가" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1565C0;fontColor=#ffffff;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="60" y="90" width="300" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="h_sbf" value="SBF (업무 관점)&#10;어떤 업무로 수행하는가" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E65100;fontColor=#ffffff;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="440" y="90" width="300" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="h_bss" value="BSS (시스템 관점)&#10;어떤 화면 / 시스템에서" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#424242;fontColor=#ffffff;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="820" y="90" width="290" height="56" as="geometry" />
+        </mxCell>
+
+        <mxCell id="cjm_l1" value="CJM L1 — 6단계&#10;인입 · 탐색 · 구매/가입/개통&#10;서비스 이용 · 유지·확장 · 이탈" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#1565C0;fontSize=12;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="60" y="190" width="300" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="cjm_l4" value="L2~L4 세부 활동 (약 700개)&#10;+ 채널(TouchPoint) · 여정별 KPI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eaf2fd;strokeColor=#1565C0;fontSize=12;verticalAlign=middle;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="300" width="300" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="sbf_axis" value="SBF 여정축 (1Depth)&#10;1.탐색 · 2.회원·계정 · 3.계약·개통&#10;5.이용·변경 · 7.청구·수납&#10;8.채권·조정 · 9.해지·잔존" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe0b2;strokeColor=#E65100;fontSize=12;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="440" y="175" width="300" height="105" as="geometry" />
+        </mxCell>
+        <mxCell id="sbf_ops" value="고객접점 운영업무&#10;채널 · 상담 · 수납·미납 · 오더/풀필먼트 · 영업/판매&#10;(전체 870개 중 고객접점 업무 선별)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff0db;strokeColor=#E65100;fontSize=12;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="440" y="300" width="300" height="75" as="geometry" />
+        </mxCell>
+
+        <mxCell id="bss" value="BSS 화면 (UI Pgm ID)&#10;약 10,000건&#10;예: ZxxxBILxxx (미납/청구 화면 등)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e0e0e0;strokeColor=#424242;fontSize=12;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="820" y="190" width="290" height="180" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e_cjm_sbf1" style="endArrow=block;html=1;strokeColor=#D32F2F;strokeWidth=3;fontColor=#D32F2F;fontStyle=1;fontSize=11;" edge="1" parent="1" source="cjm_l1" target="sbf_axis">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_cjm_sbf2" style="endArrow=block;html=1;strokeColor=#D32F2F;strokeWidth=3;dashed=0;" edge="1" parent="1" source="cjm_l4" target="sbf_ops">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lbl_new" value="① 신규 구축 (이번 과제)&#10;CJM ↔ SBF 매핑&#10;단계축 정렬 + 활동 의미매칭&#10;다대다 · 신뢰도(상/중/하)" style="text;html=1;align=center;fontColor=#D32F2F;fontStyle=1;fontSize=11;labelBackgroundColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="372" y="120" width="200" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e_sbf_bss1" style="endArrow=block;html=1;strokeColor=#2E7D32;strokeWidth=3;" edge="1" parent="1" source="sbf_axis" target="bss">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_sbf_bss2" style="endArrow=block;html=1;strokeColor=#2E7D32;strokeWidth=3;" edge="1" parent="1" source="sbf_ops" target="bss">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lbl_exist" value="② 이미 존재&#10;(SBF v2.0 화면맵핑)&#10;자동 연동" style="text;html=1;align=center;fontColor=#2E7D32;fontStyle=1;fontSize=11;labelBackgroundColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="752" y="120" width="160" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="note" value="③ 여정별 KPI는 CJM L1/L2에 부착됨 → KPI 부진 시 연결된 SBF 업무·조직·BSS 시스템으로 원인 귀속 가능 (CJM KPI 출처에 이미 'NOVA SBF KPI' 일부 반영)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffde7;strokeColor=#F9A825;fontSize=12;align=left;spacingLeft=12;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="60" y="420" width="1050" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend" value="핵심: 신규로 만들 것은 ① CJM↔SBF 연결 고리 하나뿐. ② SBF→BSS 는 이미 존재하므로 자동으로 따라옴." style="text;html=1;align=left;fontSize=13;fontStyle=2;fontColor=#555555;" vertex="1" parent="1">
+          <mxGeometry x="60" y="490" width="1050" height="30" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <diagram name="② 미납 end-to-end 예시" id="page-mibap">
+    <mxGraphModel dx="1000" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="600" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="t2" value="미납 end-to-end 연결 예시" style="text;html=1;fontSize=20;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="40" y="30" width="1080" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="kpi" value="여정 KPI 예: 미납 회수율 · 연체 전환율" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffde7;strokeColor=#F9A825;fontSize=12;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="60" y="110" width="260" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="m_cjm" value="CJM (고객)&#10;&#10;L1 서비스 이용&#10;▸ L2 요금/납부 관리&#10;▸ L3/L4 미납 처리" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#1565C0;fontSize=13;align=left;spacingLeft=14;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="60" y="200" width="260" height="150" as="geometry" />
+        </mxCell>
+
+        <mxCell id="m_sbf" value="SBF (업무)&#10;&#10;1Depth: 수납·미납 운영 / 8.채권·조정&#10;3Depth 업무:&#10;· 미납 청구 조회&#10;· 미납 청구 처리" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe0b2;strokeColor=#E65100;fontSize=13;align=left;spacingLeft=14;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="450" y="200" width="280" height="150" as="geometry" />
+        </mxCell>
+
+        <mxCell id="m_bss" value="BSS (시스템)&#10;&#10;미납/청구 관련 화면&#10;UI Pgm ID&#10;(예: ZxxxBILxxx)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e0e0e0;strokeColor=#424242;fontSize=13;align=left;spacingLeft=14;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="860" y="200" width="250" height="150" as="geometry" />
+        </mxCell>
+
+        <mxCell id="me1" value="① CJM ↔ SBF 매핑 (신규)" style="endArrow=block;html=1;strokeColor=#D32F2F;strokeWidth=3;fontColor=#D32F2F;fontStyle=1;fontSize=12;" edge="1" parent="1" source="m_cjm" target="m_sbf">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="me2" value="② 화면맵핑 (기존 v2.0)" style="endArrow=block;html=1;strokeColor=#2E7D32;strokeWidth=3;fontColor=#2E7D32;fontStyle=1;fontSize=12;" edge="1" parent="1" source="m_sbf" target="m_bss">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ke" style="endArrow=none;html=1;strokeColor=#F9A825;strokeWidth=2;dashed=1;" edge="1" parent="1" source="kpi" target="m_cjm">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="m_note" value="고객이 '미납 처리'를 겪는 단계 → 그 경험을 처리하는 직원 업무(미납 청구 조회/처리) → 그 업무가 돌아가는 BSS 화면까지 한 줄로 추적. 임원이 든 예시를 그대로 구현하는 첫 검증 사례." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#9e9e9e;fontSize=12;align=left;spacingLeft=12;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="60" y="400" width="1050" height="56" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
