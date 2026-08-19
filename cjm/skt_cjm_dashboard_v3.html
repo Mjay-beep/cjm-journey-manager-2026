@@ -38,6 +38,8 @@ body{font-family:'Pretendard','Apple SD Gothic Neo',-apple-system,sans-serif;bac
 .btn-pend{background:#F59E0B22;border-color:#F59E0B55;color:#FCD34D}
 .btn-feedback{background:#6366F122;border-color:#6366F155;color:#A5B4FC;font-size:11px}
 .btn-feedback:hover{background:#6366F133;color:#C7D2FE}
+.btn-link{display:inline-flex;align-items:center;gap:5px;text-decoration:none}
+.ext-ico{width:11px;height:11px;flex:none;opacity:.7}
 .expand-group{display:flex;border:1px solid #3A4260;border-radius:7px;overflow:hidden}
 .expand-group .ebtn{padding:6px 10px;border:none;border-right:1px solid #3A4260;background:transparent;color:#C8CDD9;font-size:10.5px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .12s;white-space:nowrap}
 .expand-group .ebtn:last-child{border-right:none}
@@ -169,7 +171,8 @@ body{font-family:'Pretendard','Apple SD Gothic Neo',-apple-system,sans-serif;bac
       <button class="ebtn" id="ebtnAll" onclick="expandTo('all')">전체 펼치기</button>
     </div>
     <button class="btn btn-feedback" onclick="openFeedbackModal()">💬 의견 남기기</button>
-    <a href="https://skt-kpi-dashboard.vercel.app/" target="_blank" class="btn" style="text-decoration:none">📊 고객 여정별 KPI 관리 바로가기</a>
+    <a href="https://skt-kpi-dashboard.vercel.app/" target="_blank" rel="noopener" class="btn btn-link">📊 고객 여정별 KPI<svg class="ext-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
+    <a href="https://docs.google.com/spreadsheets/d/1sD604FpRUbi8mkT00DJxK3ErujIyhaxYzL302nuD7_A/edit?gid=534642437#gid=534642437" target="_blank" rel="noopener" class="btn btn-link">📗 CJM 데이터 소스<svg class="ext-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
     <button class="btn btn-pend" id="btnPending" onclick="scrollToPending()" style="display:none">⏳ 대기 <b id="pendingNum">0</b>건</button>
     <button class="btn" onclick="loadData()" title="새로고침">🔄</button>
   </div>
