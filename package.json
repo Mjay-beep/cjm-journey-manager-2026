@@ -1,0 +1,20 @@
+{
+  "name": "cjm-journey-manager-2026",
+  "version": "1.0.0",
+  "description": "SKT Customer Journey Manager with KPI Dashboard",
+  "type": "module",
+  "scripts": {
+    "dev": "echo 'Static site - open HTML files directly'",
+    "build": "echo 'No build step required for static site'",
+    "lint": "echo 'No linter configured'",
+    "test": "echo 'No tests configured'"
+  },
+  "dependencies": {
+    "@vercel/analytics": "^1.4.1"
+  },
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Mjay-beep/cjm-journey-manager-2026.git"
+  }
+}
