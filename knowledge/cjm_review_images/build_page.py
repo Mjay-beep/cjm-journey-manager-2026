@@ -1,102 +1,69 @@
-import re, html, subprocess
+import html, re
 ROOT='/Users/1113869/claude-projects/cjm-journey-manager-2026'
-src = subprocess.run(['git','show','HEAD~1:knowledge/cjm_dashboard_review_2026-09-30.md'],cwd=ROOT,capture_output=True,text=True).stdout
-
-# --- parse source tables / lists ---
-items={}   # num -> dict(위치, 현상, 문제, 제안)
-section_lists={}
-cur=None
-for line in src.split('\n'):
-    if line.startswith('## '): cur=line[3:].strip(); section_lists[cur]=[]; continue
-    m=re.match(r'^\| (\d-\d+) \| (.*) \|$', line)
-    if m:
-        cells=[c.strip() for c in m.group(2).split(' | ')]
-        if len(cells)==4: items[m.group(1)]=dict(위치=cells[0],현상=cells[1],문제=cells[2],제안=cells[3])
-        else: items[m.group(1)]=dict(위치=cells[0],현상=cells[1],문제='',제안=cells[2])
-        continue
-    if line.startswith('- ') and cur: section_lists[cur].append(line[2:])
-assert len(items)==32, len(items)
-
-FIG = [
- (1,'U01_header.png','사용자 헤더와 필터 바',['2-4','2-12','4-1','4-4','4-5'],['2-1']),
- (2,'U02_map.png','사용자 여정 지도, 전체 펼침 상태',['1-2','1-3','2-5','2-9','2-11','4-2'],['4-1']),
- (3,'U03_l4_register.png','L4 등록 요청 모달, 빈 값으로 제출한 직후',['1-1','2-7','4-6'],[]),
- (4,'U04_l4_edit.png','L4 수정 요청 모달',['2-6'],['1-1']),
- (5,'U05_myreq_detail.png','내 요청 상세',['2-8'],[]),
- (6,'U06_l1_filter.png','L1 필터로 인입만 선택한 상태',['2-2'],[]),
- (7,'U07_search.png','"결제" 검색 결과',['2-3'],[]),
- (8,'U08_channel.png','채널 필터에서 T월드를 한 번 클릭한 상태',['2-1'],[]),
- (9,'U09_1024.png','1024px 폭에서 본 사용자 화면',['4-3'],['1-2']),
- (10,'A01_admin_main.png','관리자 메인',['3-1','3-6','4-7'],['3-9']),
- (11,'A02_approve.png','관리자 승인 처리 모달',['3-2','3-3'],['3-4']),
- (12,'A03_edit.png','관리자 L2 직접 수정 모달',['3-4','3-5'],[]),
- (13,'A04_history.png','요청·변경 이력 탭',['3-7','3-8'],[]),
- (14,'A05_version_confirm.png','버전 확정 모달',['3-9'],[]),
- (15,'A06_v11.png','확정 버전(v1.1) 조회 화면',['3-10'],[]),
-]
-PRIMARY={}
-for n,f,t,p,s in FIG:
-    for k in p: PRIMARY[k]=n
-WIDE={1,2,6,7,8,9,10,13}
-covered=set(PRIMARY); missing=[k for k in items if k not in covered]
-assert missing==['2-10'], missing
-PRIO={'1-1','1-2','1-3'}
-
-def esc(s): return re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', html.escape(s, quote=False))
-def table(header, rows):
-    t='<table><tbody><tr>'+''.join(f'<th>{esc(c)}</th>' for c in header)+'</tr>'
-    for r in rows: t+='<tr>'+''.join(f'<td>{c}</td>' for c in r)+'</tr>'
+def esc(s): return html.escape(s, quote=False)
+def ul(items): return '<ul>'+''.join(f'<li>{x}</li>' for x in items)+'</ul>'
+def table(rows):
+    t='<table><tbody><tr><th>번호</th><th>수정 내용</th></tr>'
+    for n,c in rows: t+=f'<tr><td><strong>{esc(n)}</strong></td><td>{c}</td></tr>'
     return t+'</tbody></table>'
-def img(n,f): return f'<ac:image ac:width="{1300 if n in WIDE else 800}"><ri:attachment ri:filename="{f}"/></ac:image>'
-def numcell(k): return f'<strong>{k}</strong>'+(' 최우선' if k in PRIO else '')
-def item_rows(nums):
-    rows=[]
-    for k in nums:
-        it=items[k]; rows.append([numcell(k), esc(it['위치']), esc(it['현상']), esc(it['문제']), esc(it['제안'])])
-    return rows
-
+def img(f,w): return f'<ac:image ac:width="{w}"><ri:attachment ri:filename="{f}"/></ac:image>'
+WIDE=1300; MOD=800
 X=[]; MD=['# CJM 대시보드 검토','']
-H=['번호','위치','확인된 현상','문제','수정 제안']
-# 개요
-X.append('<h2>검토 개요</h2>')
-ov=section_lists['검토 개요']
-ov.append('읽는 방법: 그림마다 바로 아래 표에 그 그림에 표시된 번호만 정리. 번호 체계는 1 최우선 결정, 2 사용자 화면, 3 관리자 화면, 4 공통 UI와 문구')
-X.append('<ul>'+''.join(f'<li>{esc(x)}</li>' for x in ov)+'</ul>')
-MD+=['## 검토 개요','']+[f'- {x}' for x in ov]+['']
-# 최우선
-X.append('<h2>1. 개발 착수 전 결정 필요 3건</h2>')
-X.append('<p>상세 현상과 제안은 각 그림 아래 표에 있음. 여기서는 요약만 기재</p>')
-prio_rows=[]
-MD+=['## 1. 개발 착수 전 결정 필요 3건','','| 번호 | 요약 | 그림 |','|---|---|---|']
-summ={'1-1':'L4 채널이 단일 선택. 실제 원장은 복수 채널 129건, ALL 38건, ALL(Digital) 31건','1-2':'L1 6개 고정 6열 레이아웃. 실제 L1당 L4 88개 수준이라 열이 지나치게 길고 명칭 잘림','1-3':'코드 체계와 L1 명칭이 실제 원장과 다름. KPI 시트가 L4 코드로 연결되어 재발번 금지'}
-for k in ['1-1','1-2','1-3']:
-    figs=sorted({n for n,f,t,p,s in FIG if k in p or k in s})
-    g=', '.join(f'그림 {n}' for n in figs)
-    prio_rows.append([numcell(k), esc(summ[k]), g]); MD.append(f'| {k} | {summ[k]} | {g} |')
-X.append(table(['번호','요약','그림'], prio_rows)); MD.append('')
-# 그림별
-def fig_block(n,f,t,p,s):
-    X.append(f'<h3>그림 {n}. {esc(t)}</h3>')
-    note=f'붉은 번호 {", ".join(p+s)} 표시'+ (f'. 이 중 {", ".join(s)}은 다른 그림 표에서 설명' if s else '')
-    X.append(f'<p>{esc(note)}</p>')
-    X.append(img(n,f))
-    X.append(table(H, item_rows(p)))
-    MD.extend([f'### 그림 {n}. {t}','',note,'',f'![그림 {n}](cjm_review_images/{f})','','| '+' | '.join(H)+' |','|---|---|---|---|---|'])
-    for k in p:
-        it=items[k]; MD.append(f'| {k}{" (최우선)" if k in PRIO else ""} | {it["위치"]} | {it["현상"]} | {it["문제"]} | {it["제안"]} |')
+def fig(n,title,f,w,rows):
+    X.append(f'<h3>그림 {n}. {esc(title)}</h3>'); X.append(img(f,w)); X.append(table(rows))
+    MD.extend([f'### 그림 {n}. {title}','',f'![그림 {n}](cjm_review_images/{f})','','| 번호 | 수정 내용 |','|---|---|'])
+    for a,b in rows: MD.append(f'| {a} | {re.sub("<[^>]+>"," ",b).strip()} |')
     MD.append('')
-X.append('<h2>2. 사용자 화면</h2>'); MD+=['## 2. 사용자 화면','']
-for fg in FIG[:9]: fig_block(*fg)
-X.append('<h2>3. 관리자 화면</h2>'); MD+=['## 3. 관리자 화면','']
-for fg in FIG[9:]: fig_block(*fg)
-# 그림 없는 항목
-X.append('<h2>4. 그림 없는 항목</h2>'); X.append(table(H, item_rows(['2-10'])))
-it=items['2-10']; MD+=['## 4. 그림 없는 항목','','| '+' | '.join(H)+' |','|---|---|---|---|---|',f'| 2-10 | {it["위치"]} | {it["현상"]} | {it["문제"]} | {it["제안"]} |','']
-# 확인 요청 / 유지
-for sec,title in [('5. 개발자 확인 요청','5. 개발자 확인 요청'),('6. 유지할 점','6. 유지할 점')]:
-    X.append(f'<h2>{title}</h2><ul>'+''.join(f'<li>{esc(x)}</li>' for x in section_lists[sec])+'</ul>')
-    MD+=[f'## {title}','']+[f'- {x}' for x in section_lists[sec]]+['']
+
+X.append('<h2>공통</h2>')
+common=[('공통 1', ul(['전반적으로 UI수정 필요. 아이콘 깨짐, 폰트 크기 제각각, 버튼 크기 제각각 등 전체적으로 일관된 UI적용 필요.','폰트 전체적으로 Pretendard 적용'])),
+        ('공통 2','사용자 화면이 보는 버전은 확정 버전이도록 개발 필요')]
+X.append(table(common))
+MD+=['## 공통','','| 번호 | 수정 내용 |','|---|---|']+[f'| {a} | {re.sub("<[^>]+>"," ",b).strip()} |' for a,b in common]+['']
+
+X.append('<h2>사용자 화면</h2>'); MD+=['## 사용자 화면','']
+fig(1,'사용자 헤더와 필터 바','U01_header.png',WIDE,[
+ ('1','검토 대기가 필요할지 확인 필요'),
+ ('2',"필터 '전체 선택' 버튼으로 할 것 시, 선택 시, 각 항목이 모두 check되고, '전체 선택'은 '전체 해제'로 변경"),
+ ('3','문자 기호(아이콘(↗ ⌕ ▣ ⚙ ↑ ↘), 헤더(▧), 행 액션(＋ ✎)) 모두 아이콘으로 변경'),
+ ('4','서비스명 "SK텔레콤 고객 여정 지도"'),
+ ('5','"NCSTUDIO · NEXT CS", "Customer Journey Map — L1~L4 · 승인 원장" 제거'),
+])
+fig(2,'사용자 여정 지도, 전체 펼침 상태','U02_map.png',WIDE,[
+ ('6','채번 검토 필요. 구글 시트 원장 코드 방식을 따를 것. 현재는 코드를 제멋대로 생성한 방식임'),
+ ('7','해당 내용 제거'),
+ ('8','현재 검토대기 요청이 있는 행은 연필이 파란 테두리로 바뀌고, 클릭 시 새 요청 대신 기존 요청 상세가 열림. 그래서 새 요청을 할 수 없는 상태.<br/>행에 "검토대기" 배지 별도 표시하고, 수정 버튼 탭은 새 요청을 더 할 수 있도록 개선'),
+ ('9','L2 등록 요청만 하단에 있는 것이 이상함. L3, L4도 리스트를 추가하는 것 처럼 보여줄 것. 기존 대시보드 참고'),
+ ('10','여정 카드 내부 10px, 11px, 12px 혼용 → 일원'),
+ ('11','문구 수정<br/>L1 카드를 펼쳐 L2~L4 고객 접점을 확인하세요. 사용자 요청은 승인 전 원장에 반영되지 않습니다.<br/>→ L1 여정을 펼쳐 L2~L4 여정을 확인할 수 있어요. 사용자 요청 사항은 관리자 승인후 반영됩니다.'),
+])
+fig(3,'L4 등록 요청 모달, 빈 값으로 제출한 직후','U03_l4_register.png',MOD,[
+ ('12','채널 복수 선택(체크박스 또는 멀티 셀렉트)으로 변경'),
+ ('13','인풋 필드 미입력에 대한 오류는, 해당 인풋필드 하단에 표시'),
+ ('14','사용자 화면 코드 입력란은 "관리자가 부여" 로 안내'),
+])
+fig(4,'L4 수정 요청 모달','U04_l4_edit.png',MOD,[
+ ('15','드롭다운이 아니라, 모달 상단에 수정/삭제 선택 라디오 버튼으로 제공'),
+])
+fig(5,'내 요청 상세','U05_myreq_detail.png',MOD,[
+ ('16', ul(['요청 당시 값과 현재 원장 값은 중복 내용','원장이라는 말보다는 데이터로 변경'+ul(['현재 데이터','요청 데이터','현재 원장 값 → 현재 데이터','최종 반영 값 → 최종 반영 데이터'])])),
+])
+fig(6,'"결제" 검색 결과','U07_search.png',WIDE,[
+ ('17','검색창 글씨가 흰색으로 나옴. 보이지 않음'),
+ ('18','검색 결과 표시시에는 펼쳐서 보여줄 것. 현재는 접혀있는 상태에서 L4에 용어가 검색되도, 계속 접혀있음'),
+])
+X.append('<h2>관리자 화면</h2>'); MD+=['## 관리자 화면','']
+fig(7,'관리자 메인','A01_admin_main.png',WIDE,[
+ ('19','관리자 화면에도 "내 요청 1" 버튼 존재. "내 요청" 제거 또는 "요청 관리" 로 통합<br/>\'검토대기 4건, 관리자 저장은 즉시반영\'은 삭제'),
+])
+fig(8,'요청·변경 이력 탭','A04_history.png',WIDE,[
+ ('20','상태를 별도 열로 분리'),
+])
+fig(9,'버전 확정 모달','A05_version_confirm.png',MOD,[
+ ('21','현재 편집 중 원장을 스냅샷으로 보존합니다. → 현재 편집 중인 버전을 배포 버전으로 확정합니다.'),
+ ('22','"직전 버전 대비 9건 변경" 표시는 있으나 내역 보기 링크 없음. 변경 내역 볼 수 있게 해줄 것'),
+])
 storage='\n'.join(X)
 open(f'{ROOT}/knowledge/cjm_review_images/page.storage.xhtml','w',encoding='utf-8').write(storage)
 open(f'{ROOT}/knowledge/cjm_dashboard_review_2026-09-30.md','w',encoding='utf-8').write('\n'.join(MD))
-print('ok', len(storage), storage.count('<ac:image'), storage.count('<table>'))
+print('ok', storage.count('<ac:image'), storage.count('<table>'))
